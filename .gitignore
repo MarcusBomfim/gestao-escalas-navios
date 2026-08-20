@@ -1,0 +1,30 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Front-end
+node_modules/
+dist/
+coverage/
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+appsettings.Development.local.json
+secrets/
+
+# IDE e sistema operacional
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Testes e ferramentas
+TestResults/
+playwright-report/
+test-results/
+*.log
+
