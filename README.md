@@ -4,12 +4,13 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 2 — estrutura inicial**. O domínio e as regras foram documentados, a solução .NET foi dividida em camadas, o front-end React foi iniciado e o ambiente Docker foi preparado. A modelagem e a persistência no PostgreSQL serão implementadas na Parte 3.
+O projeto está na **Parte 3 — domínio e persistência concluídos**. As entidades centrais, regras de negócio, mapeamentos do Entity Framework Core e a migration inicial do PostgreSQL já foram implementados. A próxima parte será dedicada aos casos de uso e endpoints da aplicação.
 
 ## Tecnologias
 
 - C# 14 e .NET 10 LTS.
 - ASP.NET Core Web API.
+- Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
 - Vite 8.
 - PostgreSQL 17.
@@ -37,7 +38,9 @@ gestao-escalas-navios/
 └── compose.yaml
 ```
 
-As dependências seguem para dentro: `Api → Application → Domain`. A infraestrutura implementará contratos da aplicação sem transferir detalhes de banco e integração para o domínio.
+As dependências seguem para dentro: `Api → Application → Domain`. A infraestrutura implementa persistência e integrações sem transferir detalhes tecnológicos para o domínio.
+
+O banco usa o schema `port_management`, migrations versionadas e nomes em `snake_case`. A proteção contra janelas confirmadas sobrepostas é aplicada pelo próprio PostgreSQL por meio de uma restrição de exclusão.
 
 ## Requisitos locais
 
@@ -56,6 +59,20 @@ powershell -ExecutionPolicy Bypass -File .\scripts\check-prerequisites.ps1
 
 ### API
 
+Primeiro, inicie o PostgreSQL e aplique a migration. Use no comando a mesma senha definida em seu arquivo `.env`:
+
+```powershell
+docker compose up -d postgres
+dotnet tool restore
+$env:PORT_MANAGEMENT_DB = "Host=localhost;Port=5432;Database=port_management;Username=port_management;Password=SUA_SENHA_LOCAL"
+dotnet ef database update `
+  --project .\backend\src\PortManagement.Infrastructure `
+  --startup-project .\backend\src\PortManagement.Api
+$env:ConnectionStrings__Database = $env:PORT_MANAGEMENT_DB
+```
+
+Depois, execute a API:
+
 ```powershell
 dotnet restore .\backend\PortManagement.slnx
 dotnet build .\backend\PortManagement.slnx
@@ -66,6 +83,7 @@ A API ficará disponível em `http://localhost:8080`. Os endpoints iniciais são
 
 - `GET /api/v1`
 - `GET /health`
+- `GET /health/database`
 
 ### Interface
 
@@ -85,10 +103,28 @@ Crie o arquivo local de ambiente e altere a senha antes de iniciar:
 
 ```powershell
 Copy-Item .env.example .env
-docker compose up --build
+docker compose up --build -d
+docker compose ps
 ```
 
-O arquivo `.env` não é versionado.
+Altere `POSTGRES_PASSWORD` no `.env` antes de iniciar. O arquivo não é versionado. O serviço `migrations` aplica as alterações do banco e precisa terminar com o estado `Exited (0)` antes da API iniciar.
+
+Para acompanhar a inicialização:
+
+```powershell
+docker compose logs migrations
+docker compose logs api
+```
+
+## Validação
+
+```powershell
+dotnet restore .\backend\PortManagement.slnx
+dotnet build .\backend\PortManagement.slnx --no-restore
+dotnet test .\backend\PortManagement.slnx --no-build
+```
+
+A suíte atual cobre regras do número IMO, transições de escala, compatibilidade de berço, histórico de reprogramação, modelo de persistência e dependências arquiteturais.
 
 ## Objetivos
 
@@ -106,6 +142,7 @@ O arquivo `.env` não é versionado.
 - [Requisitos](docs/04-requisitos.md)
 - [Glossário portuário](docs/05-glossario-portuario.md)
 - [Cenários de aceitação](docs/06-cenarios-de-aceitacao.md)
+- [Modelo de dados](docs/07-modelo-de-dados.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio
