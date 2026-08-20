@@ -11,7 +11,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PortManagement.Application\PortManagement.Application.csproj" />
     <ProjectReference Include="..\..\src\PortManagement.Domain\PortManagement.Domain.csproj" />
   </ItemGroup>
 </Project>
-

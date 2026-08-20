@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 3 — domínio e persistência concluídos**. As entidades centrais, regras de negócio, mapeamentos do Entity Framework Core e a migration inicial do PostgreSQL já foram implementados. A próxima parte será dedicada aos casos de uso e endpoints da aplicação.
+O projeto está na **Parte 4 — primeiros casos de uso e API REST concluídos**. Já existem operações para cadastrar e consultar navios, criar e acompanhar escalas, executar transições com concorrência otimista e consultar a estrutura portuária. O ambiente Docker também carrega dados sintéticos para demonstração.
 
 ## Tecnologias
 
@@ -107,12 +107,13 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Altere `POSTGRES_PASSWORD` no `.env` antes de iniciar. O arquivo não é versionado. O serviço `migrations` aplica as alterações do banco e precisa terminar com o estado `Exited (0)` antes da API iniciar.
+Altere `POSTGRES_PASSWORD` no `.env` antes de iniciar. O arquivo não é versionado. Os serviços `migrations` e `seed-demo` precisam terminar com o estado `Exited (0)` antes da API iniciar.
 
 Para acompanhar a inicialização:
 
 ```powershell
 docker compose logs migrations
+docker compose logs seed-demo
 docker compose logs api
 ```
 
@@ -124,7 +125,21 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual cobre regras do número IMO, transições de escala, compatibilidade de berço, histórico de reprogramação, modelo de persistência e dependências arquiteturais.
+A suíte atual cobre regras do número IMO, transições de escala, compatibilidade de berço, histórico de reprogramação, casos de uso, idempotência, paginação, modelo de persistência e dependências arquiteturais.
+
+## API REST
+
+Principais rotas:
+
+- `GET /api/v1/reference-data/ports`
+- `GET` e `POST /api/v1/vessels`
+- `GET` e `POST /api/v1/port-calls`
+- `GET /api/v1/port-calls/{publicCode}`
+- `POST /api/v1/port-calls/{publicCode}/transitions`
+
+As rotas de escrita sem autenticação existem apenas no ambiente `Development`. Em produção, elas permanecem desabilitadas até a implementação de identidade e autorização na próxima etapa.
+
+Consulte [API — Parte 4](docs/08-api-parte-4.md) para filtros, exemplos de requisição, idempotência e tratamento de erros.
 
 ## Objetivos
 
@@ -143,6 +158,7 @@ A suíte atual cobre regras do número IMO, transições de escala, compatibilid
 - [Glossário portuário](docs/05-glossario-portuario.md)
 - [Cenários de aceitação](docs/06-cenarios-de-aceitacao.md)
 - [Modelo de dados](docs/07-modelo-de-dados.md)
+- [API — Parte 4](docs/08-api-parte-4.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

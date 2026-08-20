@@ -1,18 +1,36 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Api.Contracts;
+using PortManagement.Api.Endpoints.PortCalls;
+using PortManagement.Api.Endpoints.ReferenceData;
+using PortManagement.Api.Endpoints.Vessels;
+using PortManagement.Application;
 using PortManagement.Infrastructure;
 using PortManagement.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+});
+
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 var databaseConnection = builder.Configuration.GetConnectionString("Database")
     ?? throw new InvalidOperationException(
         "A conexão 'ConnectionStrings:Database' não foi configurada.");
+var enableUnauthenticatedWrites = builder.Configuration.GetValue<bool>(
+    "Features:EnableUnauthenticatedWrites");
 
-builder.Services.AddInfrastructure(databaseConnection);
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(databaseConnection);
 
 var app = builder.Build();
 
@@ -24,8 +42,19 @@ if (args.Contains("--migrate", StringComparer.Ordinal))
     return;
 }
 
+if (args.Contains("--seed-demo", StringComparer.Ordinal))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DemoDataSeeder>();
+    await seeder.SeedAsync();
+    return;
+}
+
 app.UseExceptionHandler();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.MapGet(
         "/api/v1",
@@ -38,6 +67,9 @@ app.MapGet(
     .WithName("GetApiInfo");
 
 app.MapHealthChecks("/health");
+app.MapVesselEndpoints(enableUnauthenticatedWrites);
+app.MapPortCallEndpoints(enableUnauthenticatedWrites);
+app.MapReferenceDataEndpoints();
 
 app.MapGet(
         "/health/database",

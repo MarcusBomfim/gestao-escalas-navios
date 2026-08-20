@@ -33,6 +33,8 @@ services:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
+      seed-demo:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   migrations:
@@ -46,6 +48,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: "no"
+
+  seed-demo:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["--seed-demo"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Database: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
     restart: "no"
 
   web:
