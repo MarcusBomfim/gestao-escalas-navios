@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PortManagement.Api/PortManagement.Api.csproj" />
+    <Project Path="src/PortManagement.Application/PortManagement.Application.csproj" />
+    <Project Path="src/PortManagement.Domain/PortManagement.Domain.csproj" />
+    <Project Path="src/PortManagement.Infrastructure/PortManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PortManagement.ArchitectureTests/PortManagement.ArchitectureTests.csproj" />
+    <Project Path="tests/PortManagement.IntegrationTests/PortManagement.IntegrationTests.csproj" />
+    <Project Path="tests/PortManagement.UnitTests/PortManagement.UnitTests.csproj" />
+  </Folder>
+</Solution>
+

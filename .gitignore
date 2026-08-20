@@ -1,8 +1,10 @@
 # .NET
 bin/
 obj/
+.vs/
 *.user
 *.suo
+*.nupkg
 
 # Front-end
 node_modules/
@@ -27,4 +29,3 @@ TestResults/
 playwright-report/
 test-results/
 *.log
-

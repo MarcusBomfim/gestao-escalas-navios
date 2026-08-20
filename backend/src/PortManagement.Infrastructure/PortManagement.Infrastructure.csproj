@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\PortManagement.Application\PortManagement.Application.csproj" />
+    <ProjectReference Include="..\PortManagement.Domain\PortManagement.Domain.csproj" />
+  </ItemGroup>
+</Project>
+
