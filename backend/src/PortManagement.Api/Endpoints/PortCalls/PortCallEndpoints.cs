@@ -1,24 +1,20 @@
+using System.Security.Claims;
 using PortManagement.Api.Common;
 using PortManagement.Application.PortCalls;
+using PortManagement.Application.Security;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Api.Endpoints.PortCalls;
 
 internal static class PortCallEndpoints
 {
-    private const string SystemActor = "system:api-part4";
-
-    public static IEndpointRouteBuilder MapPortCallEndpoints(
-        this IEndpointRouteBuilder endpoints,
-        bool enableUnauthenticatedWrites)
+    public static IEndpointRouteBuilder MapPortCallEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints
             .MapGroup("/api/v1/port-calls")
             .WithTags("Port Calls");
 
-        if (enableUnauthenticatedWrites)
-        {
-            group.MapPost(
+        group.MapPost(
                     "/",
                     async (
                         CreatePortCallRequest body,
@@ -47,8 +43,8 @@ internal static class PortCallEndpoints
                                 : Results.Ok(response.PortCall));
                     })
                 .WithName("CreatePortCall")
-                .WithSummary("Cria uma escala de forma idempotente");
-        }
+                .WithSummary("Cria uma escala de forma idempotente")
+                .RequireAuthorization(AuthorizationPolicies.CreatePortCalls);
 
         group.MapGet(
                 "/",
@@ -88,13 +84,12 @@ internal static class PortCallEndpoints
             .WithName("GetPortCallByCode")
             .WithSummary("Consulta os detalhes e o histórico de uma escala");
 
-        if (enableUnauthenticatedWrites)
-        {
-            group.MapPost(
+        group.MapPost(
                     "/{publicCode}/transitions",
                     async (
                         string publicCode,
                         TransitionPortCallRequest request,
+                        ClaimsPrincipal principal,
                         TransitionPortCallHandler handler,
                         CancellationToken cancellationToken) =>
                     {
@@ -103,15 +98,15 @@ internal static class PortCallEndpoints
                                 publicCode,
                                 request.NewStatus,
                                 request.ExpectedVersion,
-                                SystemActor,
+                                principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown",
                                 request.Reason),
                             cancellationToken);
 
                         return result.ToHttpResult(Results.Ok);
                     })
                 .WithName("TransitionPortCall")
-                .WithSummary("Executa uma transição válida usando concorrência otimista");
-        }
+                .WithSummary("Executa uma transição válida usando concorrência otimista")
+                .RequireAuthorization(AuthorizationPolicies.TransitionPortCalls);
 
         return endpoints;
     }

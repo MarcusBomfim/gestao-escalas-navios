@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Domain.Operations;
 using PortManagement.Domain.Organizations;
@@ -5,13 +7,15 @@ using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Ports;
 using PortManagement.Domain.Vessels;
+using PortManagement.Infrastructure.Identity;
 
 namespace PortManagement.Infrastructure.Persistence;
 
 public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbContext> options)
-    : DbContext(options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
 {
     public const string Schema = "port_management";
+    public const string IdentitySchema = "identity";
 
     public DbSet<Vessel> Vessels => Set<Vessel>();
 
@@ -35,6 +39,8 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
 
     public DbSet<CargoOperation> CargoOperations => Set<CargoOperation>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         IncrementPortCallVersions();
@@ -49,11 +55,36 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        modelBuilder.HasDefaultSchema(Schema);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PortManagementDbContext).Assembly);
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
+        builder.HasDefaultSchema(Schema);
+        ConfigureIdentityTables(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(PortManagementDbContext).Assembly);
+    }
+
+    private static void ConfigureIdentityTables(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ApplicationUser>(user =>
+        {
+            user.ToTable("users", IdentitySchema);
+            user.Property(applicationUser => applicationUser.DisplayName)
+                .HasMaxLength(160)
+                .IsRequired();
+            user.HasIndex(applicationUser => applicationUser.NormalizedEmail)
+                .HasDatabaseName("EmailIndex")
+                .IsUnique();
+            user.HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(applicationUser => applicationUser.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<ApplicationRole>().ToTable("roles", IdentitySchema);
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("user_roles", IdentitySchema);
+        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("user_claims", IdentitySchema);
+        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins", IdentitySchema);
+        modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("role_claims", IdentitySchema);
+        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("user_tokens", IdentitySchema);
     }
 
     private void IncrementPortCallVersions()

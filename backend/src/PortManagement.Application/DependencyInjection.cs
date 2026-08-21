@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
+using PortManagement.Application.Security;
 using PortManagement.Application.Vessels;
 
 namespace PortManagement.Application;
@@ -17,6 +18,11 @@ public static class DependencyInjection
         services.AddScoped<ListPortCallsHandler>();
         services.AddScoped<TransitionPortCallHandler>();
         services.AddScoped<GetPortStructureHandler>();
+        services.AddScoped<LoginHandler>();
+        services.AddScoped<RefreshSessionHandler>();
+        services.AddScoped<RevokeSessionHandler>();
+        services.AddScoped<GetCurrentUserHandler>();
+        services.AddScoped<CreateUserHandler>();
 
         return services;
     }

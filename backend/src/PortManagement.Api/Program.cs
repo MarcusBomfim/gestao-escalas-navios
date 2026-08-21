@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using PortManagement.Api.Contracts;
 using PortManagement.Api.Endpoints.PortCalls;
 using PortManagement.Api.Endpoints.ReferenceData;
+using PortManagement.Api.Endpoints.Security;
 using PortManagement.Api.Endpoints.Vessels;
+using PortManagement.Api.Security;
 using PortManagement.Application;
 using PortManagement.Infrastructure;
 using PortManagement.Infrastructure.Persistence;
+using PortManagement.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +28,28 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 var databaseConnection = builder.Configuration.GetConnectionString("Database")
     ?? throw new InvalidOperationException(
         "A conexão 'ConnectionStrings:Database' não foi configurada.");
-var enableUnauthenticatedWrites = builder.Configuration.GetValue<bool>(
-    "Features:EnableUnauthenticatedWrites");
+var jwtOptions = new JwtOptions
+{
+    Issuer = builder.Configuration["Jwt:Issuer"] ?? string.Empty,
+    Audience = builder.Configuration["Jwt:Audience"] ?? string.Empty,
+    SigningKey = builder.Configuration["Jwt:SigningKey"] ?? string.Empty,
+    AccessTokenMinutes = builder.Configuration.GetValue("Jwt:AccessTokenMinutes", 15),
+    RefreshTokenDays = builder.Configuration.GetValue("Jwt:RefreshTokenDays", 7)
+};
+jwtOptions.Validate();
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .GetChildren()
+    .Select(origin => origin.Value)
+    .OfType<string>()
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure(databaseConnection);
+    .AddInfrastructure(databaseConnection, jwtOptions);
+builder.Services.AddApiSecurity(jwtOptions, allowedOrigins);
 
 var app = builder.Build();
 
@@ -53,8 +72,14 @@ if (args.Contains("--seed-demo", StringComparer.Ordinal))
 app.UseExceptionHandler();
 if (!app.Environment.IsDevelopment())
 {
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
+
+app.UseCors(SecurityConfiguration.WebClientCorsPolicy);
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet(
         "/api/v1",
@@ -67,9 +92,10 @@ app.MapGet(
     .WithName("GetApiInfo");
 
 app.MapHealthChecks("/health");
-app.MapVesselEndpoints(enableUnauthenticatedWrites);
-app.MapPortCallEndpoints(enableUnauthenticatedWrites);
+app.MapVesselEndpoints();
+app.MapPortCallEndpoints();
 app.MapReferenceDataEndpoints();
+app.MapSecurityEndpoints();
 
 app.MapGet(
         "/health/database",

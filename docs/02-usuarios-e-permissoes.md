@@ -8,9 +8,20 @@ O acesso será baseado em três elementos:
 2. **Organização:** em nome de qual empresa ou instituição o usuário atua.
 3. **Permissão:** qual operação ele pode executar naquele contexto.
 
-Um mesmo usuário poderá participar de mais de uma organização, com papéis diferentes. As decisões de autorização serão feitas no back-end; esconder um botão no front-end não será considerado proteção suficiente.
+As decisões de autorização são feitas no back-end; esconder um botão no front-end não é considerado proteção suficiente. A associação simples com uma organização já existe. A participação em várias organizações, com papéis diferentes em cada uma, permanece como evolução planejada.
 
-## Papéis iniciais
+## Papéis implementados na Parte 5
+
+| Papel técnico | Escopo atual |
+| --- | --- |
+| `Viewer` | Consulta somente os registros demonstrativos publicados. |
+| `Operator` | Consulta os dados e registra transições operacionais de escalas. |
+| `Planner` | Possui as permissões do operador e também cadastra navios e escalas. |
+| `Administrator` | Possui as permissões operacionais e cria usuários com papéis controlados. |
+
+Esses quatro papéis formam a primeira camada executável de autorização. As personas abaixo detalham o modelo de domínio que será refinado com escopo organizacional e permissões mais granulares.
+
+## Personas de domínio planejadas
 
 ### Visitante da demonstração
 
@@ -58,7 +69,7 @@ Um mesmo usuário poderá participar de mais de uma organização, com papéis d
 - Não é utilizado na rotina operacional.
 - Ações privilegiadas exigem auditoria reforçada.
 
-## Matriz resumida
+## Matriz de domínio planejada
 
 | Capacidade | Visitante | Agente | Operador | Planejador | Administrador | Auditor |
 |---|---:|---:|---:|---:|---:|---:|
@@ -88,4 +99,3 @@ Um mesmo usuário poderá participar de mais de uma organização, com papéis d
 - **Autenticação:** comprova a identidade do usuário.
 - **Autorização:** decide se a identidade pode executar a ação no recurso solicitado.
 - **Auditoria:** registra o resultado e o contexto das ações relevantes.
-

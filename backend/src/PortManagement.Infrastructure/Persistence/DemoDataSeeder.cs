@@ -1,22 +1,35 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using PortManagement.Application.Security;
 using PortManagement.Domain.Organizations;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Ports;
 using PortManagement.Domain.Vessels;
+using PortManagement.Infrastructure.Identity;
 
 namespace PortManagement.Infrastructure.Persistence;
 
-public sealed class DemoDataSeeder(PortManagementDbContext database)
+public sealed class DemoDataSeeder(
+    PortManagementDbContext database,
+    RoleManager<ApplicationRole> roleManager,
+    UserManager<ApplicationUser> userManager,
+    IConfiguration configuration)
 {
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await database.Ports.AnyAsync(
+        await SeedIdentityAsync(cancellationToken);
+
+        if (!await database.Ports.AnyAsync(
                 port => port.UnLocode == "BRSSZ",
                 cancellationToken))
         {
-            return;
+            await SeedPortDataAsync(cancellationToken);
         }
+    }
 
+    private async Task SeedPortDataAsync(CancellationToken cancellationToken)
+    {
         var now = DateTimeOffset.UtcNow;
         var portId = Guid.Parse("10000000-0000-0000-0000-000000000001");
         var terminalId = Guid.Parse("20000000-0000-0000-0000-000000000001");
@@ -159,6 +172,91 @@ public sealed class DemoDataSeeder(PortManagementDbContext database)
         await database.SaveChangesAsync(cancellationToken);
     }
 
+    private async Task SeedIdentityAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        foreach (var roleName in SecurityRoles.All)
+        {
+            if (await roleManager.RoleExistsAsync(roleName))
+            {
+                continue;
+            }
+
+            var roleResult = await roleManager.CreateAsync(new ApplicationRole
+            {
+                Id = Guid.NewGuid(),
+                Name = roleName
+            });
+            EnsureSucceeded(roleResult, $"criar o papel {roleName}");
+        }
+
+        var password = configuration["Demo:UserPassword"];
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            throw new InvalidOperationException(
+                "Demo:UserPassword é obrigatório para criar os usuários demonstrativos.");
+        }
+
+        var demoUsers = new[]
+        {
+            new DemoUser(
+                "Administrador Demo",
+                "admin.demo@portmanagement.local",
+                SecurityRoles.Administrator),
+            new DemoUser(
+                "Planejador Demo",
+                "planner.demo@portmanagement.local",
+                SecurityRoles.Planner),
+            new DemoUser(
+                "Operador Demo",
+                "operator.demo@portmanagement.local",
+                SecurityRoles.Operator),
+            new DemoUser(
+                "Visitante Demo",
+                "viewer.demo@portmanagement.local",
+                SecurityRoles.Viewer)
+        };
+
+        foreach (var demoUser in demoUsers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var user = await userManager.FindByEmailAsync(demoUser.Email);
+            if (user is null)
+            {
+                user = new ApplicationUser
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = demoUser.Email,
+                    Email = demoUser.Email,
+                    EmailConfirmed = true,
+                    DisplayName = demoUser.DisplayName,
+                    IsActive = true,
+                    CreatedAtUtc = DateTimeOffset.UtcNow
+                };
+                var creationResult = await userManager.CreateAsync(user, password);
+                EnsureSucceeded(creationResult, $"criar o usuário {demoUser.Email}");
+            }
+
+            if (!await userManager.IsInRoleAsync(user, demoUser.Role))
+            {
+                var assignmentResult = await userManager.AddToRoleAsync(user, demoUser.Role);
+                EnsureSucceeded(assignmentResult, $"atribuir o papel {demoUser.Role}");
+            }
+        }
+    }
+
+    private static void EnsureSucceeded(IdentityResult result, string operation)
+    {
+        if (result.Succeeded)
+        {
+            return;
+        }
+
+        var codes = string.Join(", ", result.Errors.Select(error => error.Code));
+        throw new InvalidOperationException($"Não foi possível {operation}: {codes}.");
+    }
+
     private static PortCall CreatePortCall(
         Guid id,
         Guid vesselId,
@@ -189,4 +287,6 @@ public sealed class DemoDataSeeder(PortManagementDbContext database)
         portCall.TransitionTo(PortCallStatus.UnderReview, "system:demo-seed", changedAtUtc.AddMinutes(10));
         portCall.TransitionTo(PortCallStatus.Planned, "system:demo-seed", changedAtUtc.AddMinutes(20));
     }
+
+    private sealed record DemoUser(string DisplayName, string Email, string Role);
 }

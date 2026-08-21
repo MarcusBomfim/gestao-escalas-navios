@@ -1,4 +1,5 @@
 using PortManagement.Api.Common;
+using PortManagement.Application.Security;
 using PortManagement.Application.Vessels;
 using PortManagement.Domain.Vessels;
 
@@ -6,17 +7,13 @@ namespace PortManagement.Api.Endpoints.Vessels;
 
 internal static class VesselEndpoints
 {
-    public static IEndpointRouteBuilder MapVesselEndpoints(
-        this IEndpointRouteBuilder endpoints,
-        bool enableUnauthenticatedWrites)
+    public static IEndpointRouteBuilder MapVesselEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints
             .MapGroup("/api/v1/vessels")
             .WithTags("Vessels");
 
-        if (enableUnauthenticatedWrites)
-        {
-            group.MapPost(
+        group.MapPost(
                     "/",
                     async (
                         RegisterVesselRequest request,
@@ -40,8 +37,8 @@ internal static class VesselEndpoints
                             Results.CreatedAtRoute("GetVesselById", new { id = vessel.Id }, vessel));
                     })
                 .WithName("RegisterVessel")
-                .WithSummary("Cadastra um navio");
-        }
+                .WithSummary("Cadastra um navio")
+                .RequireAuthorization(AuthorizationPolicies.ManageVessels);
 
         group.MapGet(
                 "/",

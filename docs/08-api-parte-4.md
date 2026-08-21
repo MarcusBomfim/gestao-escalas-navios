@@ -21,9 +21,9 @@ GET /api/v1/port-calls?page=1&pageSize=20&status=Planned&portId={guid}&search=de
 
 O tamanho máximo de página é `100`.
 
-## Endpoints de escrita no desenvolvimento
+## Endpoints de escrita
 
-Enquanto a autenticação não está implementada, as rotas de escrita são registradas somente quando `Features:EnableUnauthenticatedWrites` está habilitada. O valor padrão é `false`; o ambiente `Development` habilita essas rotas para testes locais.
+A partir da Parte 5, estas rotas existem em todos os ambientes e são protegidas por autenticação e políticas de autorização. Use o access token obtido em `/api/v1/auth/login` no cabeçalho `Authorization`. Consulte [Segurança — Parte 5](09-autenticacao-e-autorizacao.md).
 
 ### Cadastrar um navio
 

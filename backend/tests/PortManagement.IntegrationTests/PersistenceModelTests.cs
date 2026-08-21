@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Vessels;
+using PortManagement.Infrastructure.Identity;
 using PortManagement.Infrastructure.Persistence;
 
 namespace PortManagement.IntegrationTests;
@@ -33,5 +34,43 @@ public sealed class PersistenceModelTests
 
         Assert.NotNull(version);
         Assert.True(version.IsConcurrencyToken);
+    }
+
+    [Fact]
+    public void IdentityAndDomainDataUseSeparateSchemas()
+    {
+        using var database = new PortManagementDbContextFactory().CreateDbContext([]);
+
+        var user = database.Model.FindEntityType(typeof(ApplicationUser));
+        var refreshToken = database.Model.FindEntityType(typeof(RefreshToken));
+
+        Assert.NotNull(user);
+        Assert.NotNull(refreshToken);
+        Assert.Equal(PortManagementDbContext.IdentitySchema, user.GetSchema());
+        Assert.Equal("users", user.GetTableName());
+        Assert.Equal(PortManagementDbContext.IdentitySchema, refreshToken.GetSchema());
+        Assert.Equal("refresh_tokens", refreshToken.GetTableName());
+    }
+
+    [Fact]
+    public void RefreshTokensPersistOnlyAUniqueHashWithConcurrencyProtection()
+    {
+        using var database = new PortManagementDbContextFactory().CreateDbContext([]);
+
+        var refreshToken = database.Model.FindEntityType(typeof(RefreshToken));
+        var hash = refreshToken?.FindProperty(nameof(RefreshToken.TokenHash));
+        var revokedAt = refreshToken?.FindProperty(nameof(RefreshToken.RevokedAtUtc));
+
+        Assert.NotNull(refreshToken);
+        Assert.NotNull(hash);
+        Assert.Equal(64, hash.GetMaxLength());
+        Assert.DoesNotContain(
+            refreshToken.GetProperties(),
+            property => property.Name.Equals("Token", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(
+            refreshToken.GetIndexes(),
+            index => index.IsUnique && index.Properties.SequenceEqual([hash]));
+        Assert.NotNull(revokedAt);
+        Assert.True(revokedAt.IsConcurrencyToken);
     }
 }

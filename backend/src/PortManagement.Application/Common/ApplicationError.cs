@@ -4,7 +4,9 @@ public enum ApplicationErrorType
 {
     Validation,
     NotFound,
-    Conflict
+    Conflict,
+    Unauthorized,
+    Forbidden
 }
 
 public sealed record ApplicationError(
