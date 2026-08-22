@@ -125,6 +125,13 @@ public sealed class PortCall : AuditableEntity
         MarkUpdated(changedAtUtc);
     }
 
+    public void ClearPlan(DateTimeOffset changedAtUtc)
+    {
+        PlannedTerminalId = null;
+        PlannedBerthId = null;
+        MarkUpdated(changedAtUtc);
+    }
+
     public void TransitionTo(
         PortCallStatus newStatus,
         string changedBy,

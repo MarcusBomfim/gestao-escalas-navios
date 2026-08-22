@@ -1,12 +1,17 @@
 import { request } from './client'
 import type {
   PagedResponse,
+  BerthWindow,
+  BerthWindowStatus,
   PortCall,
   PortCallInput,
   PortCallTransitionInput,
+  PortCallBerthWindowResponse,
   PortReference,
   Vessel,
   VesselInput,
+  RequestBerthWindowInput,
+  ReprogramBerthWindowInput,
 } from './types'
 
 export interface ListOptions {
@@ -65,6 +70,66 @@ export function transitionPortCall(publicCode: string, input: PortCallTransition
   return request<PortCall>(
     `/api/v1/port-calls/${encodeURIComponent(publicCode)}/transitions`,
     jsonRequest('POST', input),
+  )
+}
+
+export interface ListBerthWindowsOptions {
+  page?: number
+  pageSize?: number
+  portId?: string
+  berthId?: string
+  status?: BerthWindowStatus
+  fromUtc?: string
+  toUtc?: string
+}
+
+export function listBerthWindows(options: ListBerthWindowsOptions = {}) {
+  const query = new URLSearchParams()
+  query.set('page', String(options.page ?? 1))
+  query.set('pageSize', String(options.pageSize ?? 20))
+  if (options.portId) query.set('portId', options.portId)
+  if (options.berthId) query.set('berthId', options.berthId)
+  if (options.status) query.set('status', options.status)
+  if (options.fromUtc) query.set('fromUtc', options.fromUtc)
+  if (options.toUtc) query.set('toUtc', options.toUtc)
+  return request<PagedResponse<BerthWindow>>(`/api/v1/planning/berth-windows?${query}`)
+}
+
+export function getPortCallBerthWindow(publicCode: string) {
+  return request<PortCallBerthWindowResponse>(
+    `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window`,
+  )
+}
+
+export function requestBerthWindow(publicCode: string, input: RequestBerthWindowInput) {
+  return request<BerthWindow>(
+    `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window`,
+    jsonRequest('POST', input),
+  )
+}
+
+export function reprogramBerthWindow(publicCode: string, input: ReprogramBerthWindowInput) {
+  return request<BerthWindow>(
+    `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window`,
+    jsonRequest('PUT', input),
+  )
+}
+
+export function confirmBerthWindow(publicCode: string, expectedWindowVersion: number) {
+  return request<BerthWindow>(
+    `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window/confirm`,
+    jsonRequest('POST', { expectedWindowVersion }),
+  )
+}
+
+export function cancelBerthWindow(
+  publicCode: string,
+  expectedWindowVersion: number,
+  reason: string,
+) {
+  return request<BerthWindow>(
+    `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window/cancel`,
+    jsonRequest('POST', { expectedWindowVersion, reason }),
   )
 }
 

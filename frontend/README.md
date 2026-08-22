@@ -53,5 +53,9 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Mudança de situação para `Administrator`, `Planner` e `Operator`.
 - Atualização coordenada do cache depois de cada escrita.
 - Tratamento de validação, conflito de versão e falhas da API.
+- Planejamento de terminal, berço e período previsto de ocupação.
+- Verificação visual de compatibilidade pelas dimensões e tipo do navio.
+- Agenda diária de janelas solicitadas e confirmadas.
+- Confirmação, reprogramação e cancelamento com justificativa.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

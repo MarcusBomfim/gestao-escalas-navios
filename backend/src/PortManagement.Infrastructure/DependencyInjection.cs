@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PortManagement.Application.Common;
+using PortManagement.Application.Planning;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
 using PortManagement.Application.Security;
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IVesselRepository, VesselRepository>();
         services.AddScoped<IPortCallRepository, PortCallRepository>();
         services.AddScoped<IPortStructureRepository, PortStructureRepository>();
+        services.AddScoped<IBerthWindowRepository, BerthWindowRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddSingleton(jwtOptions);

@@ -11,6 +11,7 @@ import { PortCallsPage } from '../pages/PortCallsPage'
 import { PortCallDetailPage } from '../pages/PortCallDetailPage'
 import { PortCallFormPage } from '../pages/PortCallFormPage'
 import { VesselFormPage } from '../pages/VesselFormPage'
+import { BerthAgendaPage } from '../pages/BerthAgendaPage'
 import { VesselsPage } from '../pages/VesselsPage'
 import './app.css'
 
@@ -39,6 +40,7 @@ export function App() {
                 <Route path="/navios" element={<VesselsPage />} />
                 <Route path="/escalas" element={<PortCallsPage />} />
                 <Route path="/escalas/:publicCode" element={<PortCallDetailPage />} />
+                <Route path="/agenda" element={<BerthAgendaPage />} />
 
                 <Route element={<RequireRole roles={['Administrator', 'Planner']} />}>
                   <Route path="/navios/novo" element={<VesselFormPage />} />

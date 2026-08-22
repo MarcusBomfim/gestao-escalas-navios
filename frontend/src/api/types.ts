@@ -124,6 +124,64 @@ export interface PortReference {
   terminals: TerminalReference[]
 }
 
+export type BerthWindowStatus = 'Requested' | 'Confirmed' | 'Completed' | 'Cancelled'
+
+export interface BerthWindowRevision {
+  previousBerthId: string
+  newBerthId: string
+  previousStartsAtUtc: string
+  previousEndsAtUtc: string
+  newStartsAtUtc: string
+  newEndsAtUtc: string
+  changedBy: string
+  reason: string
+  changedAtUtc: string
+}
+
+export interface BerthWindow {
+  id: string
+  portCallId: string
+  portCallPublicCode: string
+  vesselId: string
+  vesselName: string
+  portId: string
+  portName: string
+  terminalId: string
+  terminalName: string
+  berthId: string
+  berthCode: string
+  berthName: string
+  startsAtUtc: string
+  endsAtUtc: string
+  status: BerthWindowStatus
+  requestedBy: string
+  lastChangedBy: string | null
+  lastChangeReason: string | null
+  version: number
+  createdAtUtc: string
+  updatedAtUtc: string
+  revisions: BerthWindowRevision[]
+}
+
+export interface PortCallBerthWindowResponse {
+  window: BerthWindow | null
+}
+
+export interface RequestBerthWindowInput {
+  berthId: string
+  startsAtUtc: string
+  endsAtUtc: string
+  expectedPortCallVersion: number
+}
+
+export interface ReprogramBerthWindowInput {
+  berthId: string
+  startsAtUtc: string
+  endsAtUtc: string
+  expectedWindowVersion: number
+  reason: string
+}
+
 export interface ProblemDetails {
   title?: string
   detail?: string

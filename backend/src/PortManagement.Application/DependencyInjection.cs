@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PortManagement.Application.Planning;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
 using PortManagement.Application.Security;
@@ -18,6 +19,12 @@ public static class DependencyInjection
         services.AddScoped<GetPortCallHandler>();
         services.AddScoped<ListPortCallsHandler>();
         services.AddScoped<TransitionPortCallHandler>();
+        services.AddScoped<RequestBerthWindowHandler>();
+        services.AddScoped<ReprogramBerthWindowHandler>();
+        services.AddScoped<ConfirmBerthWindowHandler>();
+        services.AddScoped<CancelBerthWindowHandler>();
+        services.AddScoped<GetPortCallBerthWindowHandler>();
+        services.AddScoped<ListBerthWindowsHandler>();
         services.AddScoped<GetPortStructureHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshSessionHandler>();

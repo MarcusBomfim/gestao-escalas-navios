@@ -59,6 +59,8 @@ public sealed class BerthWindow : AuditableEntity
 
     public string? LastChangeReason { get; private set; }
 
+    public long Version { get; private set; }
+
     public IReadOnlyCollection<BerthWindowRevision> Revisions => _revisions.AsReadOnly();
 
     public void Confirm(string changedBy, DateTimeOffset changedAtUtc)
@@ -79,9 +81,31 @@ public sealed class BerthWindow : AuditableEntity
         string reason,
         DateTimeOffset changedAtUtc)
     {
+        ReprogramAt(
+            BerthId,
+            newStartsAtUtc,
+            newEndsAtUtc,
+            changedBy,
+            reason,
+            changedAtUtc);
+    }
+
+    public void ReprogramAt(
+        Guid newBerthId,
+        DateTimeOffset newStartsAtUtc,
+        DateTimeOffset newEndsAtUtc,
+        string changedBy,
+        string reason,
+        DateTimeOffset changedAtUtc)
+    {
         if (Status is BerthWindowStatus.Completed or BerthWindowStatus.Cancelled)
         {
             throw new DomainException("Uma janela concluída ou cancelada não pode ser reprogramada.");
+        }
+
+        if (newBerthId == Guid.Empty)
+        {
+            throw new DomainException("O novo berço da janela é obrigatório.");
         }
 
         var normalizedReason = DomainRules.RequiredText(reason, "Justificativa da reprogramação", 500);
@@ -89,6 +113,8 @@ public sealed class BerthWindow : AuditableEntity
         _revisions.Add(new BerthWindowRevision(
             Guid.NewGuid(),
             Id,
+            BerthId,
+            newBerthId,
             StartsAtUtc,
             EndsAtUtc,
             newPeriod.Start,
@@ -97,6 +123,7 @@ public sealed class BerthWindow : AuditableEntity
             normalizedReason,
             changedAtUtc));
 
+        BerthId = newBerthId;
         StartsAtUtc = newPeriod.Start;
         EndsAtUtc = newPeriod.End;
         RegisterChange(changedBy, normalizedReason, changedAtUtc);

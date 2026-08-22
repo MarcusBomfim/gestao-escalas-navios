@@ -44,6 +44,7 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         IncrementPortCallVersions();
+        IncrementBerthWindowVersions();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -52,6 +53,7 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
         CancellationToken cancellationToken = default)
     {
         IncrementPortCallVersions();
+        IncrementBerthWindowVersions();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -92,6 +94,14 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
         foreach (var entry in ChangeTracker.Entries<PortCall>().Where(entry => entry.State == EntityState.Modified))
         {
             entry.Property(portCall => portCall.Version).CurrentValue++;
+        }
+    }
+
+    private void IncrementBerthWindowVersions()
+    {
+        foreach (var entry in ChangeTracker.Entries<BerthWindow>().Where(entry => entry.State == EntityState.Modified))
+        {
+            entry.Property(window => window.Version).CurrentValue++;
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PortManagement.Application.Security;
 using PortManagement.Domain.Organizations;
+using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Ports;
 using PortManagement.Domain.Vessels;
@@ -26,6 +27,60 @@ public sealed class DemoDataSeeder(
         {
             await SeedPortDataAsync(cancellationToken);
         }
+
+        await SeedPlanningDataAsync(cancellationToken);
+    }
+
+    private async Task SeedPlanningDataAsync(CancellationToken cancellationToken)
+    {
+        if (await database.BerthWindows.AnyAsync(cancellationToken))
+        {
+            return;
+        }
+
+        var plannedCallId = Guid.Parse("60000000-0000-0000-0000-000000000002");
+        var anchorageCallId = Guid.Parse("60000000-0000-0000-0000-000000000003");
+        var berthOneId = Guid.Parse("30000000-0000-0000-0000-000000000001");
+        var berthTwoId = Guid.Parse("30000000-0000-0000-0000-000000000002");
+        var availableCalls = await database.PortCalls
+            .Where(portCall => portCall.Id == plannedCallId || portCall.Id == anchorageCallId)
+            .Select(portCall => portCall.Id)
+            .ToArrayAsync(cancellationToken);
+        var availableBerths = await database.Berths
+            .Where(berth => berth.Id == berthOneId || berth.Id == berthTwoId)
+            .Select(berth => berth.Id)
+            .ToArrayAsync(cancellationToken);
+
+        if (availableCalls.Length != 2 || availableBerths.Length != 2)
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var plannedWindow = new BerthWindow(
+            Guid.Parse("70000000-0000-0000-0000-000000000001"),
+            plannedCallId,
+            berthTwoId,
+            now.AddHours(3),
+            now.AddHours(11),
+            "system:demo-seed",
+            now);
+        plannedWindow.Confirm("system:demo-seed", now);
+
+        var anchorageWindow = new BerthWindow(
+            Guid.Parse("70000000-0000-0000-0000-000000000002"),
+            anchorageCallId,
+            berthOneId,
+            now.AddHours(-2),
+            now.AddHours(6),
+            "system:demo-seed",
+            now);
+        anchorageWindow.Confirm("system:demo-seed", now);
+
+        await database.BerthWindows.AddRangeAsync(
+            [plannedWindow, anchorageWindow],
+            cancellationToken);
+        await database.SaveChangesAsync(cancellationToken);
     }
 
     private async Task SeedPortDataAsync(CancellationToken cancellationToken)

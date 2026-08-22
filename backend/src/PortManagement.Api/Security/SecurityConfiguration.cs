@@ -55,7 +55,10 @@ internal static class SecurityConfiguration
                 policy => policy.RequireRole(
                     SecurityRoles.Administrator,
                     SecurityRoles.Planner,
-                    SecurityRoles.Operator));
+                    SecurityRoles.Operator))
+            .AddPolicy(
+                AuthorizationPolicies.ManageBerthPlanning,
+                policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Planner));
 
         services.AddRateLimiter(options =>
         {

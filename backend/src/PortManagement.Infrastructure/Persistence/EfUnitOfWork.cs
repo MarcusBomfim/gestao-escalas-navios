@@ -21,5 +21,10 @@ internal sealed class EfUnitOfWork(PortManagementDbContext database) : IUnitOfWo
         {
             throw new UniqueConstraintException(postgres.ConstraintName);
         }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation } postgres)
+        {
+            throw new ExclusionConstraintException(postgres.ConstraintName);
+        }
     }
 }

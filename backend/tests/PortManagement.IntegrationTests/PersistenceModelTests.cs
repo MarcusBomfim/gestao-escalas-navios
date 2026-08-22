@@ -37,6 +37,26 @@ public sealed class PersistenceModelTests
     }
 
     [Fact]
+    public void BerthWindowUsesConcurrencyAndAllowsOnlyOneActiveWindowPerPortCall()
+    {
+        using var database = new PortManagementDbContextFactory().CreateDbContext([]);
+
+        var berthWindow = database.Model.FindEntityType(typeof(BerthWindow));
+        var version = berthWindow?.FindProperty(nameof(BerthWindow.Version));
+        var portCallId = berthWindow?.FindProperty(nameof(BerthWindow.PortCallId));
+
+        Assert.NotNull(berthWindow);
+        Assert.NotNull(version);
+        Assert.True(version.IsConcurrencyToken);
+        Assert.NotNull(portCallId);
+        Assert.Contains(
+            berthWindow.GetIndexes(),
+            index => index.IsUnique
+                && index.Properties.SequenceEqual([portCallId])
+                && index.GetFilter() == "status IN ('Requested', 'Confirmed')");
+    }
+
+    [Fact]
     public void IdentityAndDomainDataUseSeparateSchemas()
     {
         using var database = new PortManagementDbContextFactory().CreateDbContext([]);

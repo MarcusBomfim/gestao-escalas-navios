@@ -23,3 +23,14 @@ public sealed class UniqueConstraintException : Exception
 
     public string? ConstraintName { get; }
 }
+
+public sealed class ExclusionConstraintException : Exception
+{
+    public ExclusionConstraintException(string? constraintName)
+        : base("Uma restrição de exclusão do banco de dados foi violada.")
+    {
+        ConstraintName = constraintName;
+    }
+
+    public string? ConstraintName { get; }
+}

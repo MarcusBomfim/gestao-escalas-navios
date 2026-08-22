@@ -48,6 +48,6 @@ Cancelamentos exigem justificativa tanto no formulário quanto no domínio. Cada
 - Formulários responsivos e operáveis por teclado.
 - Histórico exibido do evento mais recente para o mais antigo.
 
-## Limite desta etapa
+## Escopo original desta etapa
 
-Ainda não foram implementados o planejamento de terminal e berço, janelas de atracação, operação de carga ou notificações. Esses módulos serão construídos sobre as escalas e permissões consolidadas nesta parte.
+O planejamento de terminal, berço e janelas de atracação foi implementado posteriormente na [Parte 8](12-planejamento-atracacao.md). Operações de carga e notificações permanecem para etapas futuras.

@@ -19,8 +19,12 @@ internal sealed class BerthWindowConfiguration : IEntityTypeConfiguration<BerthW
         builder.Property(window => window.RequestedBy).HasMaxLength(120).IsRequired();
         builder.Property(window => window.LastChangedBy).HasMaxLength(120);
         builder.Property(window => window.LastChangeReason).HasMaxLength(500);
+        builder.Property(window => window.Version).IsConcurrencyToken();
         builder.HasIndex(window => new { window.BerthId, window.StartsAtUtc, window.EndsAtUtc });
         builder.HasIndex(window => new { window.PortCallId, window.Status });
+        builder.HasIndex(window => window.PortCallId)
+            .IsUnique()
+            .HasFilter("status IN ('Requested', 'Confirmed')");
         builder.HasOne(window => window.PortCall)
             .WithMany()
             .HasForeignKey(window => window.PortCallId)

@@ -14,6 +14,8 @@ public sealed class BerthWindowRevision : Entity
     internal BerthWindowRevision(
         Guid id,
         Guid berthWindowId,
+        Guid previousBerthId,
+        Guid newBerthId,
         DateTimeOffset previousStartsAtUtc,
         DateTimeOffset previousEndsAtUtc,
         DateTimeOffset newStartsAtUtc,
@@ -24,6 +26,8 @@ public sealed class BerthWindowRevision : Entity
         : base(id)
     {
         BerthWindowId = berthWindowId;
+        PreviousBerthId = previousBerthId;
+        NewBerthId = newBerthId;
         PreviousStartsAtUtc = DomainRules.ToUtc(previousStartsAtUtc);
         PreviousEndsAtUtc = DomainRules.ToUtc(previousEndsAtUtc);
         NewStartsAtUtc = DomainRules.ToUtc(newStartsAtUtc);
@@ -36,6 +40,10 @@ public sealed class BerthWindowRevision : Entity
     public Guid BerthWindowId { get; private set; }
 
     public BerthWindow BerthWindow { get; private set; } = null!;
+
+    public Guid PreviousBerthId { get; private set; }
+
+    public Guid NewBerthId { get; private set; }
 
     public DateTimeOffset PreviousStartsAtUtc { get; private set; }
 

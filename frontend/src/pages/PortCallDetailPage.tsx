@@ -9,6 +9,7 @@ import { getAllowedTransitions, portCallPurposeLabels } from '../components/port
 import { QueryError, TableSkeleton } from '../components/QueryFeedback'
 import { StatusBadge } from '../components/StatusBadge'
 import { getStatusLabel } from '../components/statusLabels'
+import { BerthPlanningPanel } from '../components/BerthPlanningPanel'
 
 export function PortCallDetailPage() {
   const { publicCode = '' } = useParams()
@@ -42,6 +43,7 @@ export function PortCallDetailPage() {
   const data = portCall.data
   const nextStatuses = getAllowedTransitions(data.status)
   const canTransition = hasAnyRole('Administrator', 'Planner', 'Operator')
+  const canManagePlanning = hasAnyRole('Administrator', 'Planner')
 
   const handleTransition = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -108,6 +110,8 @@ export function PortCallDetailPage() {
           )}
         </section>
       </div>
+
+      <BerthPlanningPanel portCall={data} canManage={canManagePlanning} />
 
       <section className="content-card history-panel">
         <header><p>Rastreabilidade</p><h3>Histórico da escala</h3></header>

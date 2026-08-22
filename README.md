@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 7 — fluxos operacionais e rastreabilidade concluídos**. Além da autenticação e das consultas, a aplicação permite cadastrar e editar navios, registrar escalas, consultar seus detalhes e executar transições de situação com histórico auditável.
+O projeto está na **Parte 8 — planejamento de atracação e agenda de berços concluídos**. A aplicação agora valida compatibilidade entre navio e berço, gerencia janelas solicitadas ou confirmadas, preserva reprogramações e impede sobreposição de ocupações confirmadas.
 
 ## Tecnologias
 
@@ -143,7 +143,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 31 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade de berço, histórico de reprogramação, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 36 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -167,6 +167,7 @@ Rotas disponíveis:
 - `/escalas` — consulta de escalas com busca e filtro por situação.
 - `/escalas/nova` — criação idempotente de uma escala.
 - `/escalas/{publicCode}` — detalhes, rota, histórico e transição de situação.
+- `/agenda` — agenda diária de janelas solicitadas e confirmadas por berço.
 
 As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
@@ -180,6 +181,10 @@ Principais rotas:
 - `GET` e `POST /api/v1/port-calls`
 - `GET /api/v1/port-calls/{publicCode}`
 - `POST /api/v1/port-calls/{publicCode}/transitions`
+- `GET /api/v1/planning/berth-windows`
+- `GET`, `POST` e `PUT /api/v1/planning/port-calls/{publicCode}/berth-window`
+- `POST /api/v1/planning/port-calls/{publicCode}/berth-window/confirm`
+- `POST /api/v1/planning/port-calls/{publicCode}/berth-window/cancel`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
@@ -222,6 +227,7 @@ Consulte [API — Parte 4](docs/08-api-parte-4.md) para filtros, exemplos de req
 Consulte [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md) para o fluxo de sessão, matriz de permissões e decisões de segurança.
 Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas, estados de interface e estratégia de integração com a API.
 Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para formulários, permissões, idempotência e transições de escala.
+Consulte [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md) para compatibilidade, agenda, concorrência e proteção contra sobreposição.
 
 ## Objetivos
 
@@ -244,6 +250,7 @@ Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para 
 - [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md)
 - [Interface — Parte 6](docs/10-interface-autenticada.md)
 - [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md)
+- [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

@@ -7,6 +7,7 @@ const navigation = [
   { to: '/painel', label: 'Visão geral', code: 'VG', end: true },
   { to: '/navios', label: 'Navios', code: 'NV', end: false },
   { to: '/escalas', label: 'Escalas', code: 'ES', end: false },
+  { to: '/agenda', label: 'Agenda', code: 'AG', end: true },
 ]
 
 const pageTitles: Record<string, { eyebrow: string; title: string }> = {
@@ -15,6 +16,7 @@ const pageTitles: Record<string, { eyebrow: string; title: string }> = {
   '/escalas': { eyebrow: 'Planejamento portuário', title: 'Escalas' },
   '/navios/novo': { eyebrow: 'Cadastro operacional', title: 'Novo navio' },
   '/escalas/nova': { eyebrow: 'Planejamento portuário', title: 'Nova escala' },
+  '/agenda': { eyebrow: 'Planejamento portuário', title: 'Agenda de berços' },
 }
 
 const roleLabels: Record<SecurityRole, string> = {
