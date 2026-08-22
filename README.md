@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 5 — autenticação e autorização concluídas**. A API possui identidade persistida, sessões JWT, refresh token rotativo em cookie seguro e controle de acesso por papéis. As consultas demonstrativas continuam públicas; operações que alteram dados exigem autenticação e a permissão adequada.
+O projeto está na **Parte 6 — interface autenticada e consultas operacionais concluídas**. A aplicação React possui página pública, login com contas demonstrativas, restauração segura de sessão, rotas protegidas e painéis conectados à API para navios, escalas e estrutura portuária.
 
 ## Tecnologias
 
@@ -13,6 +13,7 @@ O projeto está na **Parte 5 — autenticação e autorização concluídas**. A
 - ASP.NET Core Identity e autenticação JWT Bearer.
 - Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
+- React Router e TanStack Query.
 - Vite 8.
 - PostgreSQL 17.
 - Docker e Docker Compose.
@@ -71,6 +72,7 @@ dotnet ef database update `
   --startup-project .\backend\src\PortManagement.Api
 $env:ConnectionStrings__Database = $env:PORT_MANAGEMENT_DB
 $env:Jwt__SigningKey = "SUA_CHAVE_LOCAL_COM_PELO_MENOS_32_BYTES"
+$env:Demo__UserPassword = "SUA_SENHA_DEMO"
 ```
 
 Depois, execute a API:
@@ -78,6 +80,7 @@ Depois, execute a API:
 ```powershell
 dotnet restore .\backend\PortManagement.slnx
 dotnet build .\backend\PortManagement.slnx
+dotnet run --project .\backend\src\PortManagement.Api -- --seed-demo
 dotnet run --project .\backend\src\PortManagement.Api
 ```
 
@@ -94,6 +97,8 @@ Em outro terminal:
 ```powershell
 cd .\frontend
 npm.cmd install
+npm.cmd run typecheck
+npm.cmd run lint
 npm.cmd run dev
 ```
 
@@ -139,6 +144,27 @@ dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
 A suíte atual possui 30 testes e cobre regras do número IMO, transições de escala, compatibilidade de berço, histórico de reprogramação, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+
+Para validar a interface:
+
+```powershell
+cd .\frontend
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd run build
+```
+
+## Interface Web
+
+Rotas disponíveis:
+
+- `/` — apresentação pública do projeto.
+- `/login` — seleção e autenticação de uma conta demonstrativa.
+- `/painel` — indicadores e movimentações recentes.
+- `/navios` — consulta paginada e busca de navios.
+- `/escalas` — consulta de escalas com busca e filtro por situação.
+
+As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
 ## API REST
 
@@ -189,6 +215,7 @@ Invoke-RestMethod `
 
 Consulte [API — Parte 4](docs/08-api-parte-4.md) para filtros, exemplos de requisição, idempotência e tratamento de erros.
 Consulte [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md) para o fluxo de sessão, matriz de permissões e decisões de segurança.
+Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas, estados de interface e estratégia de integração com a API.
 
 ## Objetivos
 
@@ -209,6 +236,7 @@ Consulte [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md) para o 
 - [Modelo de dados](docs/07-modelo-de-dados.md)
 - [API — Parte 4](docs/08-api-parte-4.md)
 - [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md)
+- [Interface — Parte 6](docs/10-interface-autenticada.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio
