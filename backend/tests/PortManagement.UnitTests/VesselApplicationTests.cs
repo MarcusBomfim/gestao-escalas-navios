@@ -44,6 +44,44 @@ public sealed class VesselApplicationTests
         Assert.False(repository.ListWasCalled);
     }
 
+    [Fact]
+    public async Task UpdateChangesOperationalDetailsAndSaves()
+    {
+        var vessel = new Vessel(
+            Guid.NewGuid(),
+            "Navio Antigo",
+            ImoNumber.Parse("IMO9074729"),
+            "BR",
+            VesselType.ContainerShip,
+            250,
+            38,
+            12,
+            DateTimeOffset.UtcNow);
+        var repository = new VesselRepositoryFake { TrackedVessel = vessel };
+        var unitOfWork = new UnitOfWorkFake();
+        var handler = new UpdateVesselHandler(repository, unitOfWork);
+
+        var result = await handler.HandleAsync(
+            new UpdateVesselCommand(
+                vessel.Id,
+                "Navio Atualizado",
+                "IMO9074729",
+                "PA",
+                VesselType.GeneralCargo,
+                210,
+                32,
+                10.5m,
+                "PTMB",
+                "710000001"),
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Navio Atualizado", vessel.Name);
+        Assert.Equal("PA", vessel.FlagCode);
+        Assert.Equal(vessel.Id, repository.ExcludedVesselId);
+        Assert.Equal(1, unitOfWork.SaveCalls);
+    }
+
     private sealed class VesselRepositoryFake : IVesselRepository
     {
         public bool ImoExists { get; init; }
@@ -52,10 +90,18 @@ public sealed class VesselApplicationTests
 
         public Vessel? AddedVessel { get; private set; }
 
+        public Vessel? TrackedVessel { get; init; }
+
+        public Guid? ExcludedVesselId { get; private set; }
+
         public Task<bool> ActiveImoExistsAsync(
             ImoNumber imoNumber,
-            CancellationToken cancellationToken) =>
-            Task.FromResult(ImoExists);
+            Guid? excludingVesselId,
+            CancellationToken cancellationToken)
+        {
+            ExcludedVesselId = excludingVesselId;
+            return Task.FromResult(ImoExists);
+        }
 
         public Task AddAsync(Vessel vessel, CancellationToken cancellationToken)
         {
@@ -65,6 +111,9 @@ public sealed class VesselApplicationTests
 
         public Task<Vessel?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
             Task.FromResult<Vessel?>(null);
+
+        public Task<Vessel?> FindTrackedByIdAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult(TrackedVessel);
 
         public Task<PagedResult<VesselResponse>> ListAsync(
             ListVesselsQuery query,
@@ -77,7 +126,12 @@ public sealed class VesselApplicationTests
 
     private sealed class UnitOfWorkFake : IUnitOfWork
     {
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(1);
+        public int SaveCalls { get; private set; }
+
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            SaveCalls++;
+            return Task.FromResult(1);
+        }
     }
 }

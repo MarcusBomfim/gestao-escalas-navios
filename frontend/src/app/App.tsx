@@ -2,11 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from '../auth/AuthProvider'
 import { RequireAuth } from '../auth/RequireAuth'
+import { RequireRole } from '../auth/RequireRole'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { PortCallsPage } from '../pages/PortCallsPage'
+import { PortCallDetailPage } from '../pages/PortCallDetailPage'
+import { PortCallFormPage } from '../pages/PortCallFormPage'
+import { VesselFormPage } from '../pages/VesselFormPage'
 import { VesselsPage } from '../pages/VesselsPage'
 import './app.css'
 
@@ -34,6 +38,13 @@ export function App() {
                 <Route path="/painel" element={<OverviewPage />} />
                 <Route path="/navios" element={<VesselsPage />} />
                 <Route path="/escalas" element={<PortCallsPage />} />
+                <Route path="/escalas/:publicCode" element={<PortCallDetailPage />} />
+
+                <Route element={<RequireRole roles={['Administrator', 'Planner']} />}>
+                  <Route path="/navios/novo" element={<VesselFormPage />} />
+                  <Route path="/navios/:id/editar" element={<VesselFormPage />} />
+                  <Route path="/escalas/nova" element={<PortCallFormPage />} />
+                </Route>
               </Route>
             </Route>
 

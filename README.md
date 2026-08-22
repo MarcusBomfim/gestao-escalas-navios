@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 6 — interface autenticada e consultas operacionais concluídas**. A aplicação React possui página pública, login com contas demonstrativas, restauração segura de sessão, rotas protegidas e painéis conectados à API para navios, escalas e estrutura portuária.
+O projeto está na **Parte 7 — fluxos operacionais e rastreabilidade concluídos**. Além da autenticação e das consultas, a aplicação permite cadastrar e editar navios, registrar escalas, consultar seus detalhes e executar transições de situação com histórico auditável.
 
 ## Tecnologias
 
@@ -143,7 +143,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 30 testes e cobre regras do número IMO, transições de escala, compatibilidade de berço, histórico de reprogramação, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 31 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade de berço, histórico de reprogramação, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -162,7 +162,11 @@ Rotas disponíveis:
 - `/login` — seleção e autenticação de uma conta demonstrativa.
 - `/painel` — indicadores e movimentações recentes.
 - `/navios` — consulta paginada e busca de navios.
+- `/navios/novo` — cadastro de navio para `Administrator` e `Planner`.
+- `/navios/{id}/editar` — atualização dos dados operacionais de um navio.
 - `/escalas` — consulta de escalas com busca e filtro por situação.
+- `/escalas/nova` — criação idempotente de uma escala.
+- `/escalas/{publicCode}` — detalhes, rota, histórico e transição de situação.
 
 As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
@@ -172,6 +176,7 @@ Principais rotas:
 
 - `GET /api/v1/reference-data/ports`
 - `GET` e `POST /api/v1/vessels`
+- `PUT /api/v1/vessels/{id}`
 - `GET` e `POST /api/v1/port-calls`
 - `GET /api/v1/port-calls/{publicCode}`
 - `POST /api/v1/port-calls/{publicCode}/transitions`
@@ -216,6 +221,7 @@ Invoke-RestMethod `
 Consulte [API — Parte 4](docs/08-api-parte-4.md) para filtros, exemplos de requisição, idempotência e tratamento de erros.
 Consulte [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md) para o fluxo de sessão, matriz de permissões e decisões de segurança.
 Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas, estados de interface e estratégia de integração com a API.
+Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para formulários, permissões, idempotência e transições de escala.
 
 ## Objetivos
 
@@ -237,6 +243,7 @@ Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas
 - [API — Parte 4](docs/08-api-parte-4.md)
 - [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md)
 - [Interface — Parte 6](docs/10-interface-autenticada.md)
+- [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

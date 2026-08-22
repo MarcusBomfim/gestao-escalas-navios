@@ -38,6 +38,18 @@ export interface Vessel {
   updatedAtUtc: string
 }
 
+export interface VesselInput {
+  name: string
+  imoNumber: string | null
+  flagCode: string
+  type: string
+  lengthOverallMeters: number
+  beamMeters: number
+  maximumDraftMeters: number
+  callSign: string | null
+  mmsi: string | null
+}
+
 export interface PortCallStatusHistory {
   previousStatus: string
   newStatus: string
@@ -67,6 +79,21 @@ export interface PortCall {
   updatedAtUtc: string
   closedAtUtc: string | null
   statusHistory: PortCallStatusHistory[]
+}
+
+export interface PortCallInput {
+  vesselId: string
+  portId: string
+  purpose: string
+  voyageNumber: string | null
+  previousPortUnLocode: string | null
+  nextPortUnLocode: string | null
+}
+
+export interface PortCallTransitionInput {
+  newStatus: string
+  expectedVersion: number
+  reason: string | null
 }
 
 export interface BerthReference {

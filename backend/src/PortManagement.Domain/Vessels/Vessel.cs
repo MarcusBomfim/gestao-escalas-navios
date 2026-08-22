@@ -62,6 +62,30 @@ public sealed class Vessel : AuditableEntity
         MarkUpdated(changedAtUtc);
     }
 
+    public void UpdateDetails(
+        string name,
+        ImoNumber? imoNumber,
+        string flagCode,
+        VesselType type,
+        decimal lengthOverallMeters,
+        decimal beamMeters,
+        decimal maximumDraftMeters,
+        string? callSign,
+        string? mmsi,
+        DateTimeOffset changedAtUtc)
+    {
+        Name = DomainRules.RequiredText(name, "Nome do navio", 160);
+        ImoNumber = imoNumber;
+        FlagCode = DomainRules.RequiredText(flagCode, "Código da bandeira", 2).ToUpperInvariant();
+        Type = type;
+        LengthOverallMeters = DomainRules.Positive(lengthOverallMeters, "Comprimento total");
+        BeamMeters = DomainRules.Positive(beamMeters, "Boca");
+        MaximumDraftMeters = DomainRules.Positive(maximumDraftMeters, "Calado máximo");
+        CallSign = DomainRules.OptionalText(callSign, "Indicativo de chamada", 20)?.ToUpperInvariant();
+        Mmsi = DomainRules.OptionalText(mmsi, "MMSI", 9);
+        MarkUpdated(changedAtUtc);
+    }
+
     public void Deactivate(DateTimeOffset changedAtUtc)
     {
         IsActive = false;

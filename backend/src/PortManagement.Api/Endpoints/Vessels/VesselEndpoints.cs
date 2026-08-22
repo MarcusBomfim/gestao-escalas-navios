@@ -76,11 +76,50 @@ internal static class VesselEndpoints
             .WithName("GetVesselById")
             .WithSummary("Consulta um navio pelo identificador");
 
+        group.MapPut(
+                    "/{id:guid}",
+                    async (
+                        Guid id,
+                        UpdateVesselRequest request,
+                        UpdateVesselHandler handler,
+                        CancellationToken cancellationToken) =>
+                    {
+                        var result = await handler.HandleAsync(
+                            new UpdateVesselCommand(
+                                id,
+                                request.Name,
+                                request.ImoNumber,
+                                request.FlagCode,
+                                request.Type,
+                                request.LengthOverallMeters,
+                                request.BeamMeters,
+                                request.MaximumDraftMeters,
+                                request.CallSign,
+                                request.Mmsi),
+                            cancellationToken);
+
+                        return result.ToHttpResult(Results.Ok);
+                    })
+                .WithName("UpdateVessel")
+                .WithSummary("Atualiza os dados operacionais de um navio")
+                .RequireAuthorization(AuthorizationPolicies.ManageVessels);
+
         return endpoints;
     }
 }
 
 internal sealed record RegisterVesselRequest(
+    string Name,
+    string? ImoNumber,
+    string FlagCode,
+    VesselType Type,
+    decimal LengthOverallMeters,
+    decimal BeamMeters,
+    decimal MaximumDraftMeters,
+    string? CallSign,
+    string? Mmsi);
+
+internal sealed record UpdateVesselRequest(
     string Name,
     string? ImoNumber,
     string FlagCode,

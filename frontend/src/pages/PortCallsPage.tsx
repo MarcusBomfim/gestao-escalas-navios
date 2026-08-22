@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { listPortCalls } from '../api/portManagement'
 import { EmptyState, QueryError, TableSkeleton } from '../components/QueryFeedback'
 import { Pagination } from '../components/Pagination'
@@ -38,9 +39,7 @@ export function PortCallsPage() {
           <h2>{portCalls.data?.totalItems ?? '—'} escalas registradas</h2>
           <span>Consulte a situação, o trajeto e o planejamento de atracação.</span>
         </div>
-        {hasAnyRole('Administrator', 'Planner', 'Operator') && (
-          <span className="permission-note">Seu perfil permite atuar nas escalas</span>
-        )}
+        {hasAnyRole('Administrator', 'Planner') && <Link className="primary-action" to="/escalas/nova">Registrar escala</Link>}
       </section>
 
       <section className="content-card data-card">
@@ -74,7 +73,7 @@ export function PortCallsPage() {
         {portCalls.data && portCalls.data.items.length > 0 && (
           <div className="table-scroll">
             <table>
-              <thead><tr><th>Escala</th><th>Navio</th><th>Situação</th><th>Terminal / berço</th><th>Rota</th><th>Atualização</th></tr></thead>
+              <thead><tr><th>Escala</th><th>Navio</th><th>Situação</th><th>Terminal / berço</th><th>Rota</th><th>Atualização</th><th><span className="sr-only">Ações</span></th></tr></thead>
               <tbody>
                 {portCalls.data.items.map((call) => (
                   <tr key={call.id}>
@@ -84,6 +83,7 @@ export function PortCallsPage() {
                     <td>{call.plannedTerminalName ?? 'A definir'}<small>{call.plannedBerthName ?? 'Sem berço'}</small></td>
                     <td><span className="route-code">{call.previousPortUnLocode ?? '—'} → {call.nextPortUnLocode ?? '—'}</span></td>
                     <td>{formatDate(call.updatedAtUtc)}</td>
+                    <td className="table-action"><Link to={`/escalas/${call.publicCode}`}>Detalhes</Link></td>
                   </tr>
                 ))}
               </tbody>

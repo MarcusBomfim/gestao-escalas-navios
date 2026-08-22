@@ -29,6 +29,18 @@ public sealed record RegisterVesselCommand(
     string? CallSign,
     string? Mmsi);
 
+public sealed record UpdateVesselCommand(
+    Guid Id,
+    string Name,
+    string? ImoNumber,
+    string FlagCode,
+    VesselType Type,
+    decimal LengthOverallMeters,
+    decimal BeamMeters,
+    decimal MaximumDraftMeters,
+    string? CallSign,
+    string? Mmsi);
+
 public sealed record ListVesselsQuery(
     int Page = 1,
     int PageSize = 20,
@@ -37,11 +49,16 @@ public sealed record ListVesselsQuery(
 
 public interface IVesselRepository
 {
-    Task<bool> ActiveImoExistsAsync(ImoNumber imoNumber, CancellationToken cancellationToken);
+    Task<bool> ActiveImoExistsAsync(
+        ImoNumber imoNumber,
+        Guid? excludingVesselId,
+        CancellationToken cancellationToken);
 
     Task AddAsync(Vessel vessel, CancellationToken cancellationToken);
 
     Task<Vessel?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<Vessel?> FindTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<PagedResult<VesselResponse>> ListAsync(
         ListVesselsQuery query,

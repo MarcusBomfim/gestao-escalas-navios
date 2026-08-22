@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { listVessels } from '../api/portManagement'
 import { EmptyState, QueryError, TableSkeleton } from '../components/QueryFeedback'
 import { Pagination } from '../components/Pagination'
@@ -39,9 +40,7 @@ export function VesselsPage() {
           <h2>{vessels.data?.totalItems ?? '—'} navios ativos cadastrados</h2>
           <span>Características dimensionais usadas no planejamento das escalas.</span>
         </div>
-        {hasAnyRole('Administrator', 'Planner') && (
-          <span className="permission-note">Seu perfil permite cadastrar navios</span>
-        )}
+        {hasAnyRole('Administrator', 'Planner') && <Link className="primary-action" to="/navios/novo">Cadastrar navio</Link>}
       </section>
 
       <section className="content-card data-card">
@@ -69,7 +68,7 @@ export function VesselsPage() {
         {vessels.data && vessels.data.items.length > 0 && (
           <div className="table-scroll">
             <table>
-              <thead><tr><th>Navio</th><th>Tipo</th><th>Bandeira</th><th>Dimensões</th><th>Calado máx.</th><th>Situação</th></tr></thead>
+              <thead><tr><th>Navio</th><th>Tipo</th><th>Bandeira</th><th>Dimensões</th><th>Calado máx.</th><th>Situação</th>{hasAnyRole('Administrator', 'Planner') && <th><span className="sr-only">Ações</span></th>}</tr></thead>
               <tbody>
                 {vessels.data.items.map((vessel) => (
                   <tr key={vessel.id}>
@@ -79,6 +78,7 @@ export function VesselsPage() {
                     <td>{formatMeasurement(vessel.lengthOverallMeters)} × {formatMeasurement(vessel.beamMeters)} m</td>
                     <td>{formatMeasurement(vessel.maximumDraftMeters)} m</td>
                     <td><span className={`record-state ${vessel.isActive ? 'active' : ''}`}>{vessel.isActive ? 'Ativo' : 'Inativo'}</span></td>
+                    {hasAnyRole('Administrator', 'Planner') && <td className="table-action"><Link to={`/navios/${vessel.id}/editar`}>Editar</Link></td>}
                   </tr>
                 ))}
               </tbody>

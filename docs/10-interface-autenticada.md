@@ -50,6 +50,6 @@ A interface identifica o papel principal do usuário e informa quando o perfil p
 - Respeito à preferência `prefers-reduced-motion`.
 - Textos associados aos estados operacionais.
 
-## Limite desta etapa
+## Escopo original desta etapa
 
-A Parte 6 implementa autenticação e consultas. Formulários de cadastro, comandos de transição e detalhes completos de uma escala ficam para a próxima etapa, usando as permissões e a infraestrutura já preparadas.
+A Parte 6 implementou autenticação e consultas. Os formulários de cadastro, comandos de transição e detalhes completos foram adicionados posteriormente na [Parte 7](11-fluxos-operacionais.md), usando as permissões e a infraestrutura preparadas aqui.

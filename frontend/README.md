@@ -1,6 +1,6 @@
 # Interface do Sistema de Gestão de Escalas
 
-Aplicação React com TypeScript para autenticação e consulta das operações portuárias demonstrativas.
+Aplicação React com TypeScript para autenticação, consulta e execução controlada de operações portuárias demonstrativas.
 
 ## Tecnologias
 
@@ -44,3 +44,14 @@ src/
 ```
 
 O access token não é persistido no navegador. A renovação utiliza exclusivamente o cookie `HttpOnly` emitido pela API.
+
+## Fluxos disponíveis
+
+- Cadastro e edição de navios para `Administrator` e `Planner`.
+- Criação de escala com chave de idempotência gerada no navegador.
+- Detalhes completos da escala e histórico de transições.
+- Mudança de situação para `Administrator`, `Planner` e `Operator`.
+- Atualização coordenada do cache depois de cada escrita.
+- Tratamento de validação, conflito de versão e falhas da API.
+
+As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

@@ -13,6 +13,8 @@ const pageTitles: Record<string, { eyebrow: string; title: string }> = {
   '/painel': { eyebrow: 'Centro de controle', title: 'Visão geral da operação' },
   '/navios': { eyebrow: 'Cadastro operacional', title: 'Navios' },
   '/escalas': { eyebrow: 'Planejamento portuário', title: 'Escalas' },
+  '/navios/novo': { eyebrow: 'Cadastro operacional', title: 'Novo navio' },
+  '/escalas/nova': { eyebrow: 'Planejamento portuário', title: 'Nova escala' },
 }
 
 const roleLabels: Record<SecurityRole, string> = {
@@ -26,7 +28,7 @@ export function DashboardLayout() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const page = pageTitles[location.pathname] ?? pageTitles['/painel']!
+  const page = getPageTitle(location.pathname)
   const primaryRole = user?.roles[0]
 
   const handleLogout = async () => {
@@ -111,4 +113,17 @@ function getInitials(name: string) {
     .map((part) => part.charAt(0))
     .join('')
     .toUpperCase()
+}
+
+function getPageTitle(pathname: string) {
+  if (pageTitles[pathname]) {
+    return pageTitles[pathname]
+  }
+  if (/^\/navios\/[^/]+\/editar$/.test(pathname)) {
+    return { eyebrow: 'Cadastro operacional', title: 'Editar navio' }
+  }
+  if (/^\/escalas\/[^/]+$/.test(pathname)) {
+    return { eyebrow: 'Planejamento portuário', title: 'Detalhes da escala' }
+  }
+  return pageTitles['/painel']!
 }

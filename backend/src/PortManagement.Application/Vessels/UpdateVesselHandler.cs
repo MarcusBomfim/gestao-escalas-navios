@@ -4,14 +4,22 @@ using PortManagement.Domain.Vessels;
 
 namespace PortManagement.Application.Vessels;
 
-public sealed class RegisterVesselHandler(
+public sealed class UpdateVesselHandler(
     IVesselRepository vessels,
     IUnitOfWork unitOfWork)
 {
     public async Task<Result<VesselResponse>> HandleAsync(
-        RegisterVesselCommand command,
+        UpdateVesselCommand command,
         CancellationToken cancellationToken)
     {
+        var vessel = await vessels.FindTrackedByIdAsync(command.Id, cancellationToken);
+        if (vessel is null)
+        {
+            return Result.Failure<VesselResponse>(ApplicationErrors.NotFound(
+                "vessels.not_found",
+                "O navio solicitado não foi encontrado."));
+        }
+
         try
         {
             var imoNumber = string.IsNullOrWhiteSpace(command.ImoNumber)
@@ -19,15 +27,14 @@ public sealed class RegisterVesselHandler(
                 : ImoNumber.Parse(command.ImoNumber);
 
             if (imoNumber is not null
-                && await vessels.ActiveImoExistsAsync(imoNumber, null, cancellationToken))
+                && await vessels.ActiveImoExistsAsync(imoNumber, vessel.Id, cancellationToken))
             {
                 return Result.Failure<VesselResponse>(ApplicationErrors.Conflict(
                     "vessels.imo_already_exists",
-                    "Já existe um navio ativo com o número IMO informado."));
+                    "Já existe outro navio ativo com o número IMO informado."));
             }
 
-            var vessel = new Vessel(
-                Guid.NewGuid(),
+            vessel.UpdateDetails(
                 command.Name,
                 imoNumber,
                 command.FlagCode,
@@ -35,11 +42,9 @@ public sealed class RegisterVesselHandler(
                 command.LengthOverallMeters,
                 command.BeamMeters,
                 command.MaximumDraftMeters,
-                DateTimeOffset.UtcNow,
                 command.CallSign,
-                command.Mmsi);
-
-            await vessels.AddAsync(vessel, cancellationToken);
+                command.Mmsi,
+                DateTimeOffset.UtcNow);
 
             try
             {
@@ -50,7 +55,7 @@ public sealed class RegisterVesselHandler(
             {
                 return Result.Failure<VesselResponse>(ApplicationErrors.Conflict(
                     "vessels.imo_already_exists",
-                    "Já existe um navio ativo com o número IMO informado."));
+                    "Já existe outro navio ativo com o número IMO informado."));
             }
 
             return Result.Success(vessel.ToResponse());

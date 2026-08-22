@@ -9,9 +9,12 @@ internal sealed class VesselRepository(PortManagementDbContext database) : IVess
 {
     public Task<bool> ActiveImoExistsAsync(
         ImoNumber imoNumber,
+        Guid? excludingVesselId,
         CancellationToken cancellationToken) =>
         database.Vessels.AnyAsync(
-            vessel => vessel.IsActive && vessel.ImoNumber == imoNumber,
+            vessel => vessel.IsActive
+                && vessel.ImoNumber == imoNumber
+                && (!excludingVesselId.HasValue || vessel.Id != excludingVesselId.Value),
             cancellationToken);
 
     public async Task AddAsync(Vessel vessel, CancellationToken cancellationToken)
@@ -23,6 +26,9 @@ internal sealed class VesselRepository(PortManagementDbContext database) : IVess
         database.Vessels
             .AsNoTracking()
             .SingleOrDefaultAsync(vessel => vessel.Id == id, cancellationToken);
+
+    public Task<Vessel?> FindTrackedByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        database.Vessels.SingleOrDefaultAsync(vessel => vessel.Id == id, cancellationToken);
 
     public async Task<PagedResult<VesselResponse>> ListAsync(
         ListVesselsQuery query,

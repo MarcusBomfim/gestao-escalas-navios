@@ -11,6 +11,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<RegisterVesselHandler>();
+        services.AddScoped<UpdateVesselHandler>();
         services.AddScoped<GetVesselHandler>();
         services.AddScoped<ListVesselsHandler>();
         services.AddScoped<CreatePortCallHandler>();
