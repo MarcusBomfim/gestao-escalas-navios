@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PortManagement.Application.Common;
 using PortManagement.Application.Planning;
+using PortManagement.Application.ControlTower;
 using PortManagement.Application.Operations;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
@@ -54,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IPortStructureRepository, PortStructureRepository>();
         services.AddScoped<IBerthWindowRepository, BerthWindowRepository>();
         services.AddScoped<IOperationalExecutionRepository, OperationalExecutionRepository>();
+        services.AddScoped<IControlTowerRepository, ControlTowerRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddSingleton(jwtOptions);

@@ -31,6 +31,119 @@ public sealed class DemoDataSeeder(
 
         await SeedPlanningDataAsync(cancellationToken);
         await SeedOperationalExecutionDataAsync(cancellationToken);
+        await SeedControlTowerDataAsync(cancellationToken);
+    }
+
+    private async Task SeedControlTowerDataAsync(CancellationToken cancellationToken)
+    {
+        var actor = "system:demo-seed";
+        var source = "Simulação operacional";
+        var now = DateTimeOffset.UtcNow;
+        var operationalCallId = Guid.Parse("60000000-0000-0000-0000-000000000002");
+        var anchorageCallId = Guid.Parse("60000000-0000-0000-0000-000000000003");
+
+        var operationalWindow = await database.BerthWindows
+            .SingleOrDefaultAsync(
+                window => window.PortCallId == operationalCallId
+                    && window.Status == BerthWindowStatus.Confirmed,
+                cancellationToken);
+        var berthedAt = await database.PortCallEvents
+            .Where(portCallEvent => portCallEvent.PortCallId == operationalCallId
+                && portCallEvent.Phase == PortCallEventPhase.Berth
+                && portCallEvent.Action == PortCallEventAction.Completion
+                && portCallEvent.Classifier == TemporalClassifier.Actual)
+            .Select(portCallEvent => (DateTimeOffset?)portCallEvent.OccursAtUtc)
+            .MinAsync(cancellationToken);
+        if (operationalWindow is not null
+            && berthedAt.HasValue
+            && operationalWindow.StartsAtUtc > berthedAt.Value)
+        {
+            operationalWindow.Reprogram(
+                berthedAt.Value.AddMinutes(-30),
+                now.AddHours(2),
+                actor,
+                "Alinhamento da janela com a execução demonstrativa.",
+                now);
+        }
+
+        var anchorageCall = await database.PortCalls.SingleOrDefaultAsync(
+            portCall => portCall.Id == anchorageCallId,
+            cancellationToken);
+        var anchorageEventExists = await database.PortCallEvents.AnyAsync(
+            portCallEvent => portCallEvent.PortCallId == anchorageCallId
+                && portCallEvent.Phase == PortCallEventPhase.Anchorage
+                && portCallEvent.Action == PortCallEventAction.Arrival
+                && portCallEvent.Classifier == TemporalClassifier.Actual,
+            cancellationToken);
+        if (anchorageCall?.Status == PortCallStatus.AtAnchorage && !anchorageEventExists)
+        {
+            await database.PortCallEvents.AddAsync(
+                new PortCallEvent(
+                    Guid.NewGuid(),
+                    anchorageCall.Id,
+                    PortCallEventPhase.Anchorage,
+                    PortCallEventAction.Arrival,
+                    TemporalClassifier.Actual,
+                    now.AddHours(-1),
+                    source,
+                    actor,
+                    now),
+                cancellationToken);
+        }
+
+        var pendingCallId = Guid.Parse("60000000-0000-0000-0000-000000000004");
+        if (!await database.PortCalls.AnyAsync(portCall => portCall.Id == pendingCallId, cancellationToken))
+        {
+            var vesselId = Guid.Parse("50000000-0000-0000-0000-000000000004");
+            var portId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+            var terminalId = Guid.Parse("20000000-0000-0000-0000-000000000001");
+            var berthId = Guid.Parse("30000000-0000-0000-0000-000000000001");
+            var agencyId = Guid.Parse("40000000-0000-0000-0000-000000000001");
+            var shippingLineId = Guid.Parse("40000000-0000-0000-0000-000000000002");
+            var vessel = await database.Vessels.SingleOrDefaultAsync(
+                item => item.Id == vesselId,
+                cancellationToken);
+            if (vessel is null)
+            {
+                vessel = new Vessel(
+                    vesselId,
+                    "Horizonte Azul Demo",
+                    null,
+                    "BR",
+                    VesselType.ContainerShip,
+                    285,
+                    42,
+                    12.9m,
+                    now.AddDays(-1),
+                    "P5DEMO");
+                await database.Vessels.AddAsync(vessel, cancellationToken);
+            }
+            var portCall = CreatePortCall(
+                pendingCallId,
+                vessel.Id,
+                portId,
+                "seed:port-call:4",
+                "DEMO-004",
+                now.AddHours(-10),
+                agencyId,
+                shippingLineId);
+            portCall.TransitionTo(PortCallStatus.Requested, actor, now.AddHours(-9));
+            portCall.TransitionTo(PortCallStatus.UnderReview, actor, now.AddHours(-8.5));
+            portCall.PlanAt(terminalId, berthId, now.AddHours(-8));
+            var pendingWindow = new BerthWindow(
+                Guid.Parse("70000000-0000-0000-0000-000000000003"),
+                portCall.Id,
+                berthId,
+                now.AddHours(-3),
+                now.AddHours(5),
+                actor,
+                now.AddHours(-8));
+
+            await database.PortCalls.AddAsync(portCall, cancellationToken);
+            await database.BerthWindows.AddAsync(pendingWindow, cancellationToken);
+        }
+
+        await database.SaveChangesAsync(cancellationToken);
     }
 
     private async Task SeedOperationalExecutionDataAsync(CancellationToken cancellationToken)

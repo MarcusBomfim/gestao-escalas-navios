@@ -262,3 +262,60 @@ export interface CreateCargoOperationInput {
   plannedEndAtUtc: string
   expectedPortCallVersion: number
 }
+
+export type OperationalAlertSeverity = 'Info' | 'Warning' | 'Critical'
+
+export type OperationalAlertType =
+  | 'MissingBerthPlan'
+  | 'PendingBerthConfirmation'
+  | 'ArrivalDelay'
+  | 'BerthOverstay'
+  | 'CargoDelay'
+  | 'ScheduleDeviation'
+  | 'StaleOperationalUpdate'
+
+export interface OperationalAlert {
+  id: string
+  portCallId: string
+  portCallPublicCode: string
+  vesselName: string
+  severity: OperationalAlertSeverity
+  type: OperationalAlertType
+  title: string
+  description: string
+  deviationMinutes: number | null
+  detectedAtUtc: string
+  actionPath: string
+}
+
+export interface ControlTowerCall {
+  id: string
+  publicCode: string
+  vesselName: string
+  status: string
+  portName: string
+  terminalName: string | null
+  berthName: string | null
+  windowStartsAtUtc: string | null
+  windowEndsAtUtc: string | null
+  lastActivityAtUtc: string | null
+  nextMilestone: OperationalMilestone | null
+  alertCount: number
+  highestAlertSeverity: OperationalAlertSeverity | null
+}
+
+export interface ControlTower {
+  generatedAtUtc: string
+  summary: {
+    activePortCalls: number
+    inOperation: number
+    callsRequiringAttention: number
+    criticalAlerts: number
+    occupiedBerths: number
+    totalBerths: number
+    berthOccupancyPercent: number
+    scheduleCompliancePercent: number
+  }
+  alerts: OperationalAlert[]
+  calls: ControlTowerCall[]
+}

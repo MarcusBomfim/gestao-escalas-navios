@@ -60,5 +60,8 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Registro sequencial de chegada, praticagem, atracação, operação, desatracação e saída.
 - Cadastro, início e conclusão de cargas com quantidade planejada e realizada.
 - Linha do tempo auditável e indicadores de permanência, operação e produtividade.
+- Torre de controle com atualização periódica, aderência à programação e ocupação de berços.
+- Fila filtrável de alertas críticos, de atenção e informativos.
+- Escalas monitoradas ordenadas por prioridade operacional.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

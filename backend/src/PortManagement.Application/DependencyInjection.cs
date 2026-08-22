@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PortManagement.Application.Planning;
+using PortManagement.Application.ControlTower;
 using PortManagement.Application.Operations;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<CreateCargoOperationHandler>();
         services.AddScoped<StartCargoOperationHandler>();
         services.AddScoped<CompleteCargoOperationHandler>();
+        services.AddScoped<GetControlTowerHandler>();
         services.AddScoped<GetPortStructureHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshSessionHandler>();

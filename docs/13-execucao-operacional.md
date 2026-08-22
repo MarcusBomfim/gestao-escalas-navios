@@ -68,3 +68,7 @@ O seed avança uma escala fictícia até `InOperation`, registra quatro marcos r
 ## Persistência
 
 A migration `AddOperationalExecutionConcurrency` adiciona o campo `version` em `cargo_operations`. O Entity Framework configura esse campo como token de concorrência e o incrementa a cada modificação.
+
+## Continuidade
+
+Os eventos e cargas desta etapa alimentam a [Parte 10 — torre de controle](14-torre-de-controle.md), que transforma desvios de planejamento e ausência de atualizações em alertas operacionais priorizados.

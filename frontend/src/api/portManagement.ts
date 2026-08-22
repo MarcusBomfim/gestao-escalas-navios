@@ -16,6 +16,7 @@ import type {
   OperationalMilestone,
   CargoOperation,
   CreateCargoOperationInput,
+  ControlTower,
 } from './types'
 
 export interface ListOptions {
@@ -141,6 +142,10 @@ export function getOperationalExecution(publicCode: string) {
   return request<OperationalExecution>(
     `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/`,
   )
+}
+
+export function getControlTower() {
+  return request<ControlTower>('/api/v1/control-tower')
 }
 
 export function recordOperationalMilestone(

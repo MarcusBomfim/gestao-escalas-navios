@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 9 — execução operacional e controle de carga concluídos**. Além do planejamento de berços, a aplicação registra marcos realizados em ordem cronológica, controla o progresso das cargas e calcula indicadores de permanência e produtividade com rastreabilidade.
+O projeto está na **Parte 10 — torre de controle e alertas operacionais concluídos**. O painel inicial agora consolida escalas ativas, ocupação de berços, aderência à programação e uma fila priorizada de desvios calculados sobre planejamento, eventos e cargas.
 
 ## Tecnologias
 
@@ -143,7 +143,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 44 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 50 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -160,7 +160,7 @@ Rotas disponíveis:
 
 - `/` — apresentação pública do projeto.
 - `/login` — seleção e autenticação de uma conta demonstrativa.
-- `/painel` — indicadores e movimentações recentes.
+- `/painel` — torre de controle com indicadores, alertas priorizados e escalas monitoradas.
 - `/navios` — consulta paginada e busca de navios.
 - `/navios/novo` — cadastro de navio para `Administrator` e `Planner`.
 - `/navios/{id}/editar` — atualização dos dados operacionais de um navio.
@@ -190,6 +190,7 @@ Principais rotas:
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations`
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/start`
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/complete`
+- `GET /api/v1/control-tower`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
@@ -234,6 +235,7 @@ Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas
 Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para formulários, permissões, idempotência e transições de escala.
 Consulte [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md) para compatibilidade, agenda, concorrência e proteção contra sobreposição.
 Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) para marcos realizados, cargas, indicadores e integridade do fluxo.
+Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para indicadores, critérios de alerta e priorização operacional.
 
 ## Objetivos
 
@@ -258,6 +260,7 @@ Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) p
 - [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md)
 - [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md)
 - [Execução operacional — Parte 9](docs/13-execucao-operacional.md)
+- [Torre de controle — Parte 10](docs/14-torre-de-controle.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio
