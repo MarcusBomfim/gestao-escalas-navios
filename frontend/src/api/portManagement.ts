@@ -12,6 +12,10 @@ import type {
   VesselInput,
   RequestBerthWindowInput,
   ReprogramBerthWindowInput,
+  OperationalExecution,
+  OperationalMilestone,
+  CargoOperation,
+  CreateCargoOperationInput,
 } from './types'
 
 export interface ListOptions {
@@ -130,6 +134,56 @@ export function cancelBerthWindow(
   return request<BerthWindow>(
     `/api/v1/planning/port-calls/${encodeURIComponent(publicCode)}/berth-window/cancel`,
     jsonRequest('POST', { expectedWindowVersion, reason }),
+  )
+}
+
+export function getOperationalExecution(publicCode: string) {
+  return request<OperationalExecution>(
+    `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/`,
+  )
+}
+
+export function recordOperationalMilestone(
+  publicCode: string,
+  milestone: OperationalMilestone,
+  occursAtUtc: string,
+  expectedPortCallVersion: number,
+) {
+  return request<OperationalExecution>(
+    `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/milestones`,
+    jsonRequest('POST', { milestone, occursAtUtc, expectedPortCallVersion }),
+  )
+}
+
+export function createCargoOperation(publicCode: string, input: CreateCargoOperationInput) {
+  return request<CargoOperation>(
+    `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/cargo-operations`,
+    jsonRequest('POST', input),
+  )
+}
+
+export function startCargoOperation(
+  publicCode: string,
+  cargoOperationId: string,
+  startedAtUtc: string,
+  expectedVersion: number,
+) {
+  return request<CargoOperation>(
+    `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/cargo-operations/${encodeURIComponent(cargoOperationId)}/start`,
+    jsonRequest('POST', { startedAtUtc, expectedVersion }),
+  )
+}
+
+export function completeCargoOperation(
+  publicCode: string,
+  cargoOperationId: string,
+  actualQuantity: number,
+  completedAtUtc: string,
+  expectedVersion: number,
+) {
+  return request<CargoOperation>(
+    `/api/v1/operations/port-calls/${encodeURIComponent(publicCode)}/cargo-operations/${encodeURIComponent(cargoOperationId)}/complete`,
+    jsonRequest('POST', { actualQuantity, completedAtUtc, expectedVersion }),
   )
 }
 

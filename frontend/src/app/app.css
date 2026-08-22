@@ -2113,6 +2113,287 @@ tbody tr:hover {
   to { transform: rotate(360deg); }
 }
 
+.operational-panel {
+  padding: 28px;
+}
+
+.operational-heading,
+.subsection-heading,
+.cargo-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.operational-heading p,
+.subsection-heading span,
+.milestone-form span,
+.cargo-card header span {
+  display: block;
+  margin: 0 0 5px;
+  color: var(--color-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.operational-heading h3,
+.subsection-heading h4 {
+  margin: 0;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid rgba(48, 202, 146, 0.25);
+  border-radius: 999px;
+  color: #7ce1bc;
+  background: rgba(48, 202, 146, 0.08);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.live-indicator i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #35d39a;
+  box-shadow: 0 0 0 4px rgba(53, 211, 154, 0.12);
+}
+
+.operational-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.operational-kpis article {
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+
+.operational-kpis span {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+}
+
+.operational-kpis strong {
+  font-size: 1.2rem;
+}
+
+.milestone-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(210px, 0.75fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid rgba(35, 153, 231, 0.28);
+  border-radius: 14px;
+  background: linear-gradient(110deg, rgba(25, 126, 194, 0.1), rgba(14, 37, 55, 0.35));
+}
+
+.milestone-form .form-feedback {
+  grid-column: 1 / -1;
+}
+
+.milestone-block-reason {
+  grid-column: 1 / -1;
+  color: #ffd57e;
+  font-size: 0.72rem;
+}
+
+.operational-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.cargo-section,
+.event-section {
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: rgba(5, 19, 30, 0.3);
+}
+
+.subsection-heading {
+  margin-bottom: 15px;
+}
+
+.subsection-heading > strong {
+  min-width: 30px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--color-accent);
+  background: rgba(35, 153, 231, 0.1);
+  text-align: center;
+}
+
+.operational-empty {
+  padding: 28px 16px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 12px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.cargo-card {
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+
+.cargo-card header strong {
+  display: block;
+}
+
+.cargo-card em {
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: var(--color-muted);
+  background: rgba(130, 150, 164, 0.1);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.cargo-card em.inprogress {
+  color: #ffd57e;
+  background: rgba(244, 174, 54, 0.1);
+}
+
+.cargo-card em.completed {
+  color: #7ce1bc;
+  background: rgba(48, 202, 146, 0.1);
+}
+
+.cargo-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.cargo-card dt {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+}
+
+.cargo-card dd {
+  margin: 3px 0 0;
+  font-weight: 750;
+}
+
+.dangerous-cargo {
+  display: block;
+  margin: 10px 0;
+  color: #ffb68b;
+}
+
+.cargo-form {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+}
+
+.cargo-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.check-field {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.check-field input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-accent);
+}
+
+.compact-action {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 6px;
+}
+
+.complete-cargo-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.operational-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.operational-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 11px;
+  padding: 7px 0 17px;
+}
+
+.operational-timeline li:not(:last-child)::before {
+  position: absolute;
+  top: 18px;
+  bottom: -3px;
+  left: 5px;
+  width: 1px;
+  background: var(--color-border-strong);
+  content: '';
+}
+
+.operational-timeline li > i {
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  margin-top: 4px;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+
+.operational-timeline strong,
+.operational-timeline time,
+.operational-timeline small {
+  display: block;
+}
+
+.operational-timeline time,
+.operational-timeline small {
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+}
+
 @media (max-width: 1080px) {
   .landing-hero {
     grid-template-columns: 1fr;
@@ -2139,6 +2420,14 @@ tbody tr:hover {
   }
 
   .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .operational-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operational-columns {
     grid-template-columns: 1fr;
   }
 }
@@ -2377,6 +2666,31 @@ tbody tr:hover {
 
   .planning-panel {
     padding: 20px 17px;
+  }
+
+  .operational-panel {
+    padding: 20px 17px;
+  }
+
+  .operational-heading,
+  .milestone-form {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .operational-heading {
+    flex-direction: column;
+  }
+
+  .live-indicator {
+    align-self: flex-start;
+  }
+
+  .operational-kpis,
+  .cargo-form-grid,
+  .cargo-card dl,
+  .complete-cargo-form {
+    grid-template-columns: 1fr;
   }
 
   .planning-heading,

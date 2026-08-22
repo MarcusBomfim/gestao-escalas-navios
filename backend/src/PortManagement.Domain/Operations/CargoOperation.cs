@@ -76,6 +76,62 @@ public sealed class CargoOperation : AuditableEntity
 
     public DateTimeOffset? ActualEndAtUtc { get; private set; }
 
+    public long Version { get; private set; }
+
+    public void Schedule(
+        DateTimeOffset plannedStartAtUtc,
+        DateTimeOffset plannedEndAtUtc,
+        DateTimeOffset changedAtUtc)
+    {
+        var start = DomainRules.ToUtc(plannedStartAtUtc);
+        var end = DomainRules.ToUtc(plannedEndAtUtc);
+        if (end <= start)
+        {
+            throw new DomainException("O término planejado deve ser posterior ao início.");
+        }
+
+        PlannedStartAtUtc = start;
+        PlannedEndAtUtc = end;
+        MarkUpdated(changedAtUtc);
+    }
+
+    public void Start(DateTimeOffset startedAtUtc, DateTimeOffset changedAtUtc)
+    {
+        if (ActualStartAtUtc.HasValue)
+        {
+            throw new DomainException("A operação de carga já foi iniciada.");
+        }
+
+        ActualStartAtUtc = DomainRules.ToUtc(startedAtUtc);
+        MarkUpdated(changedAtUtc);
+    }
+
+    public void Complete(
+        decimal actualQuantity,
+        DateTimeOffset completedAtUtc,
+        DateTimeOffset changedAtUtc)
+    {
+        if (!ActualStartAtUtc.HasValue)
+        {
+            throw new DomainException("Inicie a operação de carga antes de concluí-la.");
+        }
+
+        if (ActualEndAtUtc.HasValue)
+        {
+            throw new DomainException("A operação de carga já foi concluída.");
+        }
+
+        var completion = DomainRules.ToUtc(completedAtUtc);
+        if (completion < ActualStartAtUtc.Value)
+        {
+            throw new DomainException("O término realizado não pode ser anterior ao início.");
+        }
+
+        RecordActualQuantity(actualQuantity, changedAtUtc);
+        ActualEndAtUtc = completion;
+        MarkUpdated(changedAtUtc);
+    }
+
     public void RecordActualQuantity(decimal quantity, DateTimeOffset changedAtUtc)
     {
         if (quantity < 0)

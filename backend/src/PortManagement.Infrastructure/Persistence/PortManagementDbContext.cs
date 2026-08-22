@@ -45,6 +45,7 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
     {
         IncrementPortCallVersions();
         IncrementBerthWindowVersions();
+        IncrementCargoOperationVersions();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -54,6 +55,7 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
     {
         IncrementPortCallVersions();
         IncrementBerthWindowVersions();
+        IncrementCargoOperationVersions();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -102,6 +104,14 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
         foreach (var entry in ChangeTracker.Entries<BerthWindow>().Where(entry => entry.State == EntityState.Modified))
         {
             entry.Property(window => window.Version).CurrentValue++;
+        }
+    }
+
+    private void IncrementCargoOperationVersions()
+    {
+        foreach (var entry in ChangeTracker.Entries<CargoOperation>().Where(entry => entry.State == EntityState.Modified))
+        {
+            entry.Property(operation => operation.Version).CurrentValue++;
         }
     }
 }

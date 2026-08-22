@@ -188,3 +188,77 @@ export interface ProblemDetails {
   status?: number
   code?: string
 }
+
+export type OperationalMilestone =
+  | 'ArrivedAtAnchorage'
+  | 'PilotageStarted'
+  | 'BerthingCompleted'
+  | 'CargoOperationStarted'
+  | 'CargoOperationCompleted'
+  | 'UnberthingCompleted'
+  | 'Departed'
+
+export type CargoOperationDirection = 'Loading' | 'Discharge' | 'Both'
+export type CargoQuantityUnit = 'MetricTon' | 'CubicMeter' | 'Teu' | 'Unit'
+
+export interface OperationalEvent {
+  id: string
+  phase: string
+  action: string
+  occursAtUtc: string
+  source: string
+  recordedBy: string
+  recordedAtUtc: string
+}
+
+export interface CargoOperation {
+  id: string
+  direction: CargoOperationDirection
+  cargoType: string
+  plannedQuantity: number
+  actualQuantity: number | null
+  quantityUnit: CargoQuantityUnit
+  isDangerousCargo: boolean
+  dangerousCargoClassification: string | null
+  plannedStartAtUtc: string | null
+  plannedEndAtUtc: string | null
+  actualStartAtUtc: string | null
+  actualEndAtUtc: string | null
+  version: number
+  status: 'Planned' | 'InProgress' | 'Completed'
+}
+
+export interface CargoUnitSummary {
+  quantityUnit: CargoQuantityUnit
+  plannedQuantity: number
+  actualQuantity: number
+  productivityPerHour: number | null
+}
+
+export interface OperationalExecution {
+  portCallId: string
+  portCallPublicCode: string
+  portCallStatus: string
+  portCallVersion: number
+  nextMilestone: OperationalMilestone | null
+  events: OperationalEvent[]
+  cargoOperations: CargoOperation[]
+  kpis: {
+    portStayHours: number | null
+    berthStayHours: number | null
+    cargoOperationHours: number | null
+    cargoSummaries: CargoUnitSummary[]
+  }
+}
+
+export interface CreateCargoOperationInput {
+  direction: CargoOperationDirection
+  cargoType: string
+  plannedQuantity: number
+  quantityUnit: CargoQuantityUnit
+  isDangerousCargo: boolean
+  dangerousCargoClassification: string | null
+  plannedStartAtUtc: string
+  plannedEndAtUtc: string
+  expectedPortCallVersion: number
+}

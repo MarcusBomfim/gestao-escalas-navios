@@ -1,5 +1,6 @@
 using PortManagement.Application.Common;
 using PortManagement.Domain.Common;
+using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Application.PortCalls;
 
@@ -23,6 +24,19 @@ public sealed class TransitionPortCallHandler(
         if (portCall.Version != command.ExpectedVersion)
         {
             return Result.Failure<PortCallResponse>(ConcurrencyConflict());
+        }
+
+        if (command.NewStatus is PortCallStatus.AtAnchorage
+            or PortCallStatus.ClearedForBerthing
+            or PortCallStatus.Berthed
+            or PortCallStatus.InOperation
+            or PortCallStatus.OperationCompleted
+            or PortCallStatus.Unberthed
+            or PortCallStatus.Closed)
+        {
+            return Result.Failure<PortCallResponse>(ApplicationErrors.Validation(
+                "port_calls.operational_transition_requires_event",
+                "Use o registro de marcos operacionais para avançar esta etapa da escala."));
         }
 
         try

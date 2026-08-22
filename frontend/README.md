@@ -50,12 +50,15 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Cadastro e edição de navios para `Administrator` e `Planner`.
 - Criação de escala com chave de idempotência gerada no navegador.
 - Detalhes completos da escala e histórico de transições.
-- Mudança de situação para `Administrator`, `Planner` e `Operator`.
+- Mudanças administrativas de situação para os papéis autorizados.
 - Atualização coordenada do cache depois de cada escrita.
 - Tratamento de validação, conflito de versão e falhas da API.
 - Planejamento de terminal, berço e período previsto de ocupação.
 - Verificação visual de compatibilidade pelas dimensões e tipo do navio.
 - Agenda diária de janelas solicitadas e confirmadas.
 - Confirmação, reprogramação e cancelamento com justificativa.
+- Registro sequencial de chegada, praticagem, atracação, operação, desatracação e saída.
+- Cadastro, início e conclusão de cargas com quantidade planejada e realizada.
+- Linha do tempo auditável e indicadores de permanência, operação e produtividade.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Api.Contracts;
 using PortManagement.Api.Endpoints.Planning;
+using PortManagement.Api.Endpoints.Operations;
 using PortManagement.Api.Endpoints.PortCalls;
 using PortManagement.Api.Endpoints.ReferenceData;
 using PortManagement.Api.Endpoints.Security;
@@ -96,6 +97,7 @@ app.MapHealthChecks("/health");
 app.MapVesselEndpoints();
 app.MapPortCallEndpoints();
 app.MapPlanningEndpoints();
+app.MapOperationalExecutionEndpoints();
 app.MapReferenceDataEndpoints();
 app.MapSecurityEndpoints();
 

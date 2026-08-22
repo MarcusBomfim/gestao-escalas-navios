@@ -28,6 +28,7 @@ internal sealed class CargoOperationConfiguration : IEntityTypeConfiguration<Car
         builder.Property(operation => operation.CargoType).HasMaxLength(120).IsRequired();
         builder.Property(operation => operation.PlannedQuantity).HasPrecision(18, 3);
         builder.Property(operation => operation.ActualQuantity).HasPrecision(18, 3);
+        builder.Property(operation => operation.Version).IsConcurrencyToken();
         builder.Property(operation => operation.QuantityUnit).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(operation => operation.DangerousCargoClassification).HasMaxLength(80);
         builder.HasIndex(operation => operation.PortCallId);

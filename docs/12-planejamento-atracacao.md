@@ -66,6 +66,6 @@ Na tela da escala, o painel de planejamento permite:
 
 O seed adiciona duas janelas fictícias em berços diferentes. O processo continua idempotente: se já existirem janelas, nenhum registro adicional é criado.
 
-## Limite desta etapa
+## Continuidade
 
-A Parte 8 não registra horários efetivamente realizados, produtividade de carga ou eventos externos. Esses dados serão tratados no módulo de execução operacional.
+Os horários efetivamente realizados, as movimentações de carga e os indicadores são tratados na [Parte 9 — execução operacional](13-execucao-operacional.md). O planejamento continua sendo a origem do terminal, berço e período previstos usados pela equipe operacional.

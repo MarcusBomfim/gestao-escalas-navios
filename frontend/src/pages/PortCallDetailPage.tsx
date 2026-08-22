@@ -10,6 +10,7 @@ import { QueryError, TableSkeleton } from '../components/QueryFeedback'
 import { StatusBadge } from '../components/StatusBadge'
 import { getStatusLabel } from '../components/statusLabels'
 import { BerthPlanningPanel } from '../components/BerthPlanningPanel'
+import { OperationalExecutionPanel } from '../components/OperationalExecutionPanel'
 
 export function PortCallDetailPage() {
   const { publicCode = '' } = useParams()
@@ -112,6 +113,11 @@ export function PortCallDetailPage() {
       </div>
 
       <BerthPlanningPanel portCall={data} canManage={canManagePlanning} />
+
+      <OperationalExecutionPanel
+        publicCode={data.publicCode}
+        canManage={hasAnyRole('Administrator', 'Operator')}
+      />
 
       <section className="content-card history-panel">
         <header><p>Rastreabilidade</p><h3>Histórico da escala</h3></header>

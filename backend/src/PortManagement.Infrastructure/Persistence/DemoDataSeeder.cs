@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PortManagement.Application.Security;
 using PortManagement.Domain.Organizations;
+using PortManagement.Domain.Operations;
 using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Ports;
@@ -29,6 +30,104 @@ public sealed class DemoDataSeeder(
         }
 
         await SeedPlanningDataAsync(cancellationToken);
+        await SeedOperationalExecutionDataAsync(cancellationToken);
+    }
+
+    private async Task SeedOperationalExecutionDataAsync(CancellationToken cancellationToken)
+    {
+        var portCallId = Guid.Parse("60000000-0000-0000-0000-000000000002");
+        if (await database.PortCallEvents.AnyAsync(
+                portCallEvent => portCallEvent.PortCallId == portCallId,
+                cancellationToken))
+        {
+            return;
+        }
+
+        var portCall = await database.PortCalls.SingleOrDefaultAsync(
+            item => item.Id == portCallId,
+            cancellationToken);
+        if (portCall is null || portCall.Status != PortCallStatus.Planned)
+        {
+            return;
+        }
+
+        var actor = "system:demo-seed";
+        var source = "Simulação operacional";
+        var now = DateTimeOffset.UtcNow;
+        var milestones = new[]
+        {
+            new DemoMilestone(
+                PortCallStatus.AtAnchorage,
+                PortCallEventPhase.Anchorage,
+                PortCallEventAction.Arrival,
+                now.AddHours(-8)),
+            new DemoMilestone(
+                PortCallStatus.ClearedForBerthing,
+                PortCallEventPhase.Pilotage,
+                PortCallEventAction.Start,
+                now.AddHours(-6)),
+            new DemoMilestone(
+                PortCallStatus.Berthed,
+                PortCallEventPhase.Berth,
+                PortCallEventAction.Completion,
+                now.AddHours(-5.5)),
+            new DemoMilestone(
+                PortCallStatus.InOperation,
+                PortCallEventPhase.CargoOperation,
+                PortCallEventAction.Start,
+                now.AddHours(-5))
+        };
+
+        foreach (var milestone in milestones)
+        {
+            portCall.TransitionTo(
+                milestone.Status,
+                actor,
+                milestone.OccursAtUtc,
+                "Avanço operacional demonstrativo.");
+            await database.PortCallEvents.AddAsync(
+                new PortCallEvent(
+                    Guid.NewGuid(),
+                    portCall.Id,
+                    milestone.Phase,
+                    milestone.Action,
+                    TemporalClassifier.Actual,
+                    milestone.OccursAtUtc,
+                    source,
+                    actor,
+                    now),
+                cancellationToken);
+        }
+
+        var completedCargo = new CargoOperation(
+            Guid.Parse("80000000-0000-0000-0000-000000000001"),
+            portCall.Id,
+            CargoOperationDirection.Loading,
+            "Açúcar a granel",
+            15000,
+            CargoQuantityUnit.MetricTon,
+            false,
+            now.AddHours(-6));
+        completedCargo.Schedule(now.AddHours(-5), now.AddHours(-2), now.AddHours(-6));
+        completedCargo.Start(now.AddHours(-5), now.AddHours(-5));
+        completedCargo.Complete(14520, now.AddHours(-2.2), now.AddHours(-2.2));
+
+        var activeCargo = new CargoOperation(
+            Guid.Parse("80000000-0000-0000-0000-000000000002"),
+            portCall.Id,
+            CargoOperationDirection.Discharge,
+            "Fertilizante granulado",
+            9800,
+            CargoQuantityUnit.MetricTon,
+            false,
+            now.AddHours(-6));
+        activeCargo.Schedule(now.AddHours(-4.5), now.AddHours(1), now.AddHours(-6));
+        activeCargo.Start(now.AddHours(-4.5), now.AddHours(-4.5));
+
+        await database.CargoOperations.AddRangeAsync(
+            [completedCargo, activeCargo],
+            cancellationToken);
+        await database.SaveChangesAsync(cancellationToken);
     }
 
     private async Task SeedPlanningDataAsync(CancellationToken cancellationToken)
@@ -344,4 +443,10 @@ public sealed class DemoDataSeeder(
     }
 
     private sealed record DemoUser(string DisplayName, string Email, string Role);
+
+    private sealed record DemoMilestone(
+        PortCallStatus Status,
+        PortCallEventPhase Phase,
+        PortCallEventAction Action,
+        DateTimeOffset OccursAtUtc);
 }
