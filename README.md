@@ -1,10 +1,13 @@
 # Sistema de Gestão de Escalas de Navios
 
+[![CI](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml)
+[![Security](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml)
+
 Plataforma para planejar, acompanhar e auditar escalas e operações de navios em terminais portuários. O projeto será desenvolvido em C# com ASP.NET Core, React com TypeScript e PostgreSQL.
 
 ## Situação do projeto
 
-O projeto está na **Parte 13 — observabilidade e saúde concluídas**. A API agora emite logs JSON correlacionados, métricas HTTP, verificações separadas de vida e prontidão e um diagnóstico técnico exclusivo do administrador.
+O projeto está na **Parte 14 — CI/CD e segurança automatizada concluídas**. Pushes e pull requests agora validam backend, frontend, imagens Docker, dependências e análise estática; releases versionadas publicam imagens no GitHub Container Registry.
 
 ## Tecnologias
 
@@ -19,12 +22,15 @@ O projeto está na **Parte 13 — observabilidade e saúde concluídas**. A API 
 - Vite 8.
 - PostgreSQL 17.
 - Docker e Docker Compose.
+- GitHub Actions, CodeQL e Dependabot.
 - xUnit v3 com Microsoft Testing Platform.
 
 ## Estrutura
 
 ```text
 gestao-escalas-navios/
+├── .github/
+│   └── workflows/
 ├── backend/
 │   ├── src/
 │   │   ├── PortManagement.Api/
@@ -156,6 +162,12 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
+## Integração e entrega contínuas
+
+Os workflows em `.github/workflows` executam build, testes, lint, auditoria de dependências, CodeQL e construção das imagens em cada alteração da `main`. O Dependabot acompanha atualizações de NuGet, npm, Docker e GitHub Actions.
+
+Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) antes de proteger a branch ou criar a primeira versão.
+
 ## Interface Web
 
 Rotas disponíveis:
@@ -253,6 +265,7 @@ Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para ind
 Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md) para SignalR, reconexão e estado de leitura.
 Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md) para captura transacional, minimização de dados e exportações CSV.
 Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md) para correlação, logs, métricas e health checks.
+Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pipelines, atualização de dependências, proteção da branch e releases no GHCR.
 
 ## Objetivos
 
@@ -281,6 +294,8 @@ Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude
 - [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md)
 - [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md)
 - [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md)
+- [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md)
+- [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

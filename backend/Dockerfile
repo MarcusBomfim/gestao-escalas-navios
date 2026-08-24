@@ -18,10 +18,12 @@ RUN dotnet publish backend/src/PortManagement.Api/PortManagement.Api.csproj \
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
+LABEL org.opencontainers.image.title="Port Management API" \
+      org.opencontainers.image.description="API do Sistema de Gestão de Escalas de Navios" \
+      org.opencontainers.image.source="https://github.com/MarcusBomfim/gestao-escalas-navios"
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build --chown=appuser:appgroup /app/publish .
 USER appuser
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "PortManagement.Api.dll"]
-

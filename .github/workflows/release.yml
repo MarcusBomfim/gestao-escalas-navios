@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality-gate:
+    name: Quality gate
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  publish-images:
+    name: Publish container images
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Obter código-fonte
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Confirmar que a versão pertence à main
+        shell: bash
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" "origin/main"; then
+            echo "A tag precisa apontar para um commit pertencente à branch main."
+            exit 1
+          fi
+
+      - name: Definir nomes e versão
+        id: metadata
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "api_image=ghcr.io/${owner}/port-management-api" >> "$GITHUB_OUTPUT"
+          echo "web_image=ghcr.io/${owner}/port-management-web" >> "$GITHUB_OUTPUT"
+          echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Autenticar no GitHub Container Registry
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Preparar Buildx
+        run: docker buildx create --name port-management-builder --driver docker-container --use
+
+      - name: Construir e publicar API
+        env:
+          API_IMAGE: ${{ steps.metadata.outputs.api_image }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          docker buildx build \
+            --file backend/Dockerfile \
+            --platform linux/amd64 \
+            --tag "$API_IMAGE:$VERSION" \
+            --tag "$API_IMAGE:latest" \
+            --provenance=mode=max \
+            --sbom=true \
+            --push \
+            .
+
+      - name: Construir e publicar interface
+        env:
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+          WEB_IMAGE: ${{ steps.metadata.outputs.web_image }}
+        shell: bash
+        run: |
+          api_url="${PUBLIC_API_URL:-http://localhost:8080}"
+          docker buildx build \
+            --file frontend/Dockerfile \
+            --platform linux/amd64 \
+            --build-arg "VITE_API_URL=$api_url" \
+            --tag "$WEB_IMAGE:$VERSION" \
+            --tag "$WEB_IMAGE:latest" \
+            --provenance=mode=max \
+            --sbom=true \
+            --push \
+            .
