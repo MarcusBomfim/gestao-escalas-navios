@@ -10,6 +10,7 @@ const navigation: Array<{ to: string; label: string; code: string; end: boolean;
   { to: '/escalas', label: 'Escalas', code: 'ES', end: false },
   { to: '/agenda', label: 'Agenda', code: 'AG', end: true },
   { to: '/auditoria', label: 'Auditoria', code: 'AU', end: true, roles: ['Administrator'] },
+  { to: '/observabilidade', label: 'Saúde', code: 'OB', end: true, roles: ['Administrator'] },
 ]
 
 const pageTitles: Record<string, { eyebrow: string; title: string }> = {
@@ -20,6 +21,7 @@ const pageTitles: Record<string, { eyebrow: string; title: string }> = {
   '/escalas/nova': { eyebrow: 'Planejamento portuário', title: 'Nova escala' },
   '/agenda': { eyebrow: 'Planejamento portuário', title: 'Agenda de berços' },
   '/auditoria': { eyebrow: 'Governança operacional', title: 'Auditoria e relatórios' },
+  '/observabilidade': { eyebrow: 'Diagnóstico técnico', title: 'Saúde e observabilidade' },
 }
 
 const roleLabels: Record<SecurityRole, string> = {

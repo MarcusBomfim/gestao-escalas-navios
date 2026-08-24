@@ -10,12 +10,14 @@ let refreshPromise: Promise<SessionResponse> | null = null
 export class ApiError extends Error {
   readonly status: number
   readonly code: string | null
+  readonly correlationId: string | null
 
-  constructor(status: number, message: string, code: string | null = null) {
+  constructor(status: number, message: string, code: string | null = null, correlationId: string | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.correlationId = correlationId
   }
 }
 
@@ -158,5 +160,6 @@ async function toApiError(response: Response) {
     response.status,
     problem?.detail ?? 'Não foi possível concluir a solicitação.',
     problem?.code ?? null,
+    response.headers.get('X-Correlation-ID'),
   )
 }

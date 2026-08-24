@@ -70,5 +70,8 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Área administrativa de auditoria com filtros e paginação.
 - Exportação do histórico e do relatório operacional em CSV.
 - Neutralização de fórmulas potencialmente perigosas nas planilhas exportadas.
+- Painel administrativo de saúde e observabilidade com atualização periódica.
+- Métricas de volume, erros, latência média, percentil 95 e tempo ativo.
+- Estado de prontidão dos componentes sem exposição de informações internas.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

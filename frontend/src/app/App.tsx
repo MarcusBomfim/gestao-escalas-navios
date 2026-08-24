@@ -14,6 +14,7 @@ import { VesselFormPage } from '../pages/VesselFormPage'
 import { BerthAgendaPage } from '../pages/BerthAgendaPage'
 import { VesselsPage } from '../pages/VesselsPage'
 import { AuditPage } from '../pages/AuditPage'
+import { ObservabilityPage } from '../pages/ObservabilityPage'
 import './app.css'
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ export function App() {
                 </Route>
                 <Route element={<RequireRole roles={['Administrator']} />}>
                   <Route path="/auditoria" element={<AuditPage />} />
+                  <Route path="/observabilidade" element={<ObservabilityPage />} />
                 </Route>
               </Route>
             </Route>

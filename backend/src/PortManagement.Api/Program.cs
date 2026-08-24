@@ -1,16 +1,20 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using PortManagement.Api.Auditing;
 using PortManagement.Api.Contracts;
 using PortManagement.Api.Endpoints.Auditing;
 using PortManagement.Api.Endpoints.ControlTower;
 using PortManagement.Api.Endpoints.Notifications;
+using PortManagement.Api.Endpoints.Observability;
 using PortManagement.Api.Endpoints.Operations;
 using PortManagement.Api.Endpoints.Planning;
 using PortManagement.Api.Endpoints.PortCalls;
 using PortManagement.Api.Endpoints.ReferenceData;
 using PortManagement.Api.Endpoints.Security;
 using PortManagement.Api.Endpoints.Vessels;
+using PortManagement.Api.Observability;
 using PortManagement.Api.Realtime;
 using PortManagement.Api.Security;
 using PortManagement.Application;
@@ -22,14 +26,24 @@ using PortManagement.Infrastructure.Security;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSimpleConsole(options =>
+builder.Logging.AddJsonConsole(options =>
 {
-    options.SingleLine = true;
-    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+    options.IncludeScopes = true;
+    options.UseUtcTimestamp = true;
+    options.TimestampFormat = "O";
 });
 
 builder.Services.AddProblemDetails();
-builder.Services.AddHealthChecks();
+builder.Services.AddSingleton<ApiTelemetry>();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck(
+        "self",
+        () => HealthCheckResult.Healthy(),
+        tags: ["live"])
+    .AddCheck<DatabaseReadinessHealthCheck>(
+        "postgresql",
+        tags: ["ready"]);
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -81,6 +95,7 @@ if (args.Contains("--seed-demo", StringComparer.Ordinal))
     return;
 }
 
+app.UseMiddleware<CorrelationAndMetricsMiddleware>();
 app.UseExceptionHandler();
 if (!app.Environment.IsDevelopment())
 {
@@ -103,7 +118,27 @@ app.MapGet(
                 DateTimeOffset.UtcNow)))
     .WithName("GetApiInfo");
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks(
+    "/health/live",
+    new HealthCheckOptions
+    {
+        Predicate = registration => registration.Tags.Contains("live"),
+        ResponseWriter = HealthResponseWriter.WriteAsync
+    });
+app.MapHealthChecks(
+    "/health/ready",
+    new HealthCheckOptions
+    {
+        Predicate = registration => registration.Tags.Contains("ready"),
+        ResponseWriter = HealthResponseWriter.WriteAsync
+    });
+app.MapHealthChecks(
+    "/health",
+    new HealthCheckOptions
+    {
+        Predicate = registration => registration.Tags.Contains("ready"),
+        ResponseWriter = HealthResponseWriter.WriteAsync
+    });
 app.MapVesselEndpoints();
 app.MapPortCallEndpoints();
 app.MapPlanningEndpoints();
@@ -111,20 +146,10 @@ app.MapOperationalExecutionEndpoints();
 app.MapControlTowerEndpoints();
 app.MapNotificationEndpoints();
 app.MapAuditEndpoints();
+app.MapObservabilityEndpoints();
 app.MapHub<ControlTowerHub>("/hubs/control-tower");
 app.MapReferenceDataEndpoints();
 app.MapSecurityEndpoints();
-
-app.MapGet(
-        "/health/database",
-        async (PortManagementDbContext database, CancellationToken cancellationToken) =>
-            await database.Database.CanConnectAsync(cancellationToken)
-                ? Results.Ok(new { status = "healthy" })
-                : Results.Problem(
-                    title: "Database unavailable",
-                    detail: "A API não conseguiu acessar o banco de dados.",
-                    statusCode: StatusCodes.Status503ServiceUnavailable))
-    .WithName("GetDatabaseHealth");
 
 app.Run();
 

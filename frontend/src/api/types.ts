@@ -346,3 +346,24 @@ export interface NotificationCenter {
   unreadCount: number
   items: NotificationItem[]
 }
+
+export interface ObservabilitySummary {
+  generatedAtUtc: string
+  api: {
+    startedAtUtc: string
+    uptimeSeconds: number
+    totalRequests: number
+    clientErrors: number
+    serverErrors: number
+    activeRequests: number
+    averageDurationMilliseconds: number
+    p95DurationMilliseconds: number
+    requestsLastMinute: number
+  }
+  readinessStatus: 'Healthy' | 'Degraded' | 'Unhealthy'
+  components: Array<{
+    name: string
+    status: 'Healthy' | 'Degraded' | 'Unhealthy'
+    durationMilliseconds: number
+  }>
+}

@@ -4,13 +4,14 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 12 — auditoria e relatórios concluídos**. Alterações de domínio agora geram evidências persistentes, a consulta é exclusiva do administrador e os históricos e indicadores operacionais podem ser exportados em CSV protegido contra fórmulas de planilha.
+O projeto está na **Parte 13 — observabilidade e saúde concluídas**. A API agora emite logs JSON correlacionados, métricas HTTP, verificações separadas de vida e prontidão e um diagnóstico técnico exclusivo do administrador.
 
 ## Tecnologias
 
 - C# 14 e .NET 10 LTS.
 - ASP.NET Core Web API.
 - ASP.NET Core SignalR.
+- ASP.NET Core Health Checks e `System.Diagnostics.Metrics`.
 - ASP.NET Core Identity e autenticação JWT Bearer.
 - Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
@@ -144,7 +145,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 59 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 66 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -170,6 +171,7 @@ Rotas disponíveis:
 - `/escalas/{publicCode}` — detalhes, planejamento, marcos realizados, cargas, indicadores e histórico.
 - `/agenda` — agenda diária de janelas solicitadas e confirmadas por berço.
 - `/auditoria` — evidências, filtros e relatórios exclusivos do `Administrator`.
+- `/observabilidade` — métricas e prontidão da instância para o `Administrator`.
 
 As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
@@ -200,13 +202,16 @@ Principais rotas:
 - `GET /api/v1/audit`
 - `GET /api/v1/audit/export`
 - `GET /api/v1/reports/operations/export`
+- `GET /api/v1/observability/summary`
+- `GET /health/live`
+- `GET /health/ready`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/auth/me`
 - `POST /api/v1/users`
 
-Todas as rotas de negócio exigem autenticação. O cadastro de usuários e os relatórios de auditoria exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. O papel `Viewer` permanece somente leitura.
+Todas as rotas de negócio exigem autenticação. O cadastro de usuários, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
 
 Após o login, envie o `accessToken` no cabeçalho `Authorization: Bearer {token}`. O refresh token não aparece no JSON: ele é mantido em cookie `HttpOnly`, rotacionado a cada renovação e armazenado no PostgreSQL somente como hash SHA-256.
 
@@ -247,6 +252,7 @@ Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) p
 Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para indicadores, critérios de alerta e priorização operacional.
 Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md) para SignalR, reconexão e estado de leitura.
 Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md) para captura transacional, minimização de dados e exportações CSV.
+Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md) para correlação, logs, métricas e health checks.
 
 ## Objetivos
 
@@ -274,6 +280,7 @@ Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.m
 - [Torre de controle — Parte 10](docs/14-torre-de-controle.md)
 - [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md)
 - [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md)
+- [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

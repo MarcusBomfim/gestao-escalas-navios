@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using PortManagement.Api.Observability;
 using PortManagement.Application.Security;
 using PortManagement.Infrastructure.Security;
 
@@ -78,6 +79,9 @@ internal static class SecurityConfiguration
                 policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Operator))
             .AddPolicy(
                 AuthorizationPolicies.ViewAuditReports,
+                policy => policy.RequireRole(SecurityRoles.Administrator))
+            .AddPolicy(
+                AuthorizationPolicies.ViewObservability,
                 policy => policy.RequireRole(SecurityRoles.Administrator));
 
         services.AddRateLimiter(options =>
@@ -107,6 +111,7 @@ internal static class SecurityConfiguration
                             .WithOrigins([.. allowedOrigins])
                             .AllowAnyHeader()
                             .AllowAnyMethod()
+                            .WithExposedHeaders(CorrelationAndMetricsMiddleware.CorrelationHeader)
                             .AllowCredentials();
                     }
                 }));

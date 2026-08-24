@@ -49,4 +49,4 @@ A migration `AddAuditTrail` cria `port_management.audit_records` e índices por 
 
 ## Continuidade
 
-A próxima evolução recomendada é incluir observabilidade técnica, métricas da API e verificação automatizada de saúde dos componentes.
+A observabilidade técnica, as métricas da API e os health checks estão descritos em [Observabilidade e saúde — Parte 13](17-observabilidade-e-saude.md).

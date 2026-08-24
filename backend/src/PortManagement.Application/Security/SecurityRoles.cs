@@ -21,4 +21,5 @@ public static class AuthorizationPolicies
     public const string ManageBerthPlanning = nameof(ManageBerthPlanning);
     public const string ManageOperationalExecution = nameof(ManageOperationalExecution);
     public const string ViewAuditReports = nameof(ViewAuditReports);
+    public const string ViewObservability = nameof(ViewObservability);
 }

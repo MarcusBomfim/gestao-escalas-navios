@@ -20,6 +20,7 @@ import type {
   NotificationCenter,
   AuditAction,
   AuditRecord,
+  ObservabilitySummary,
 } from './types'
 
 export interface ListOptions {
@@ -176,6 +177,10 @@ export function exportAuditRecords(options: Omit<ListAuditOptions, 'page' | 'pag
 
 export function exportOperationalReport() {
   return download('/api/v1/reports/operations/export')
+}
+
+export function getObservabilitySummary() {
+  return request<ObservabilitySummary>('/api/v1/observability/summary')
 }
 
 export function markNotificationRead(alertId: string) {

@@ -9,5 +9,10 @@ export function FormError({ error }: { error: unknown }) {
     ? error.message
     : 'Não foi possível concluir a operação. Tente novamente.'
 
-  return <div className="form-feedback error" role="alert">{message}</div>
+  return (
+    <div className="form-feedback error" role="alert">
+      {message}
+      {error instanceof ApiError && error.correlationId && <small>Referência: {error.correlationId}</small>}
+    </div>
+  )
 }

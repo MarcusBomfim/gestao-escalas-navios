@@ -9,6 +9,7 @@ export function QueryError({ error }: { error: unknown }) {
     <div className="query-feedback error" role="alert">
       <strong>Falha ao consultar a API</strong>
       <p>{message}</p>
+      {error instanceof ApiError && error.correlationId && <small>Referência: {error.correlationId}</small>}
     </div>
   )
 }
