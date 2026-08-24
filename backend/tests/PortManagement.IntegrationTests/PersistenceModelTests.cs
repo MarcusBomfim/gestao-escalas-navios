@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PortManagement.Domain.Auditing;
 using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Vessels;
@@ -92,5 +93,25 @@ public sealed class PersistenceModelTests
             index => index.IsUnique && index.Properties.SequenceEqual([hash]));
         Assert.NotNull(revokedAt);
         Assert.True(revokedAt.IsConcurrencyToken);
+    }
+
+    [Fact]
+    public void AuditRecordsAreIndexedAndDoNotPersistChangedValues()
+    {
+        using var database = new PortManagementDbContextFactory().CreateDbContext([]);
+
+        var auditRecord = database.Model.FindEntityType(typeof(AuditRecord));
+        var occurredAt = auditRecord?.FindProperty(nameof(AuditRecord.OccurredAtUtc));
+
+        Assert.NotNull(auditRecord);
+        Assert.Equal(PortManagementDbContext.Schema, auditRecord.GetSchema());
+        Assert.Equal("audit_records", auditRecord.GetTableName());
+        Assert.NotNull(occurredAt);
+        Assert.Contains(
+            auditRecord.GetIndexes(),
+            index => index.Properties.Contains(occurredAt));
+        Assert.DoesNotContain(
+            auditRecord.GetProperties(),
+            property => property.Name.Contains("Value", StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -13,6 +13,7 @@ import { PortCallFormPage } from '../pages/PortCallFormPage'
 import { VesselFormPage } from '../pages/VesselFormPage'
 import { BerthAgendaPage } from '../pages/BerthAgendaPage'
 import { VesselsPage } from '../pages/VesselsPage'
+import { AuditPage } from '../pages/AuditPage'
 import './app.css'
 
 const queryClient = new QueryClient({
@@ -46,6 +47,9 @@ export function App() {
                   <Route path="/navios/novo" element={<VesselFormPage />} />
                   <Route path="/navios/:id/editar" element={<VesselFormPage />} />
                   <Route path="/escalas/nova" element={<PortCallFormPage />} />
+                </Route>
+                <Route element={<RequireRole roles={['Administrator']} />}>
+                  <Route path="/auditoria" element={<AuditPage />} />
                 </Route>
               </Route>
             </Route>

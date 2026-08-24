@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using PortManagement.Domain.Auditing;
 using PortManagement.Domain.Notifications;
 using PortManagement.Domain.Operations;
 using PortManagement.Domain.Organizations;
@@ -41,6 +42,8 @@ public sealed class PortManagementDbContext(DbContextOptions<PortManagementDbCon
     public DbSet<CargoOperation> CargoOperations => Set<CargoOperation>();
 
     public DbSet<NotificationReceipt> NotificationReceipts => Set<NotificationReceipt>();
+
+    public DbSet<AuditRecord> AuditRecords => Set<AuditRecord>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

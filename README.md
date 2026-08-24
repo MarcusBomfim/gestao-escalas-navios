@@ -4,7 +4,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 11 — notificações em tempo real concluídas**. Os alertas da torre agora chegam pelo SignalR, aparecem em um centro de notificações global e mantêm o estado de leitura individual de cada usuário no PostgreSQL.
+O projeto está na **Parte 12 — auditoria e relatórios concluídos**. Alterações de domínio agora geram evidências persistentes, a consulta é exclusiva do administrador e os históricos e indicadores operacionais podem ser exportados em CSV protegido contra fórmulas de planilha.
 
 ## Tecnologias
 
@@ -144,7 +144,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 54 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 59 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -169,6 +169,7 @@ Rotas disponíveis:
 - `/escalas/nova` — criação idempotente de uma escala.
 - `/escalas/{publicCode}` — detalhes, planejamento, marcos realizados, cargas, indicadores e histórico.
 - `/agenda` — agenda diária de janelas solicitadas e confirmadas por berço.
+- `/auditoria` — evidências, filtros e relatórios exclusivos do `Administrator`.
 
 As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
@@ -196,13 +197,16 @@ Principais rotas:
 - `POST /api/v1/notifications/{alertId}/read`
 - `POST /api/v1/notifications/read-all`
 - `/hubs/control-tower` — canal SignalR autenticado.
+- `GET /api/v1/audit`
+- `GET /api/v1/audit/export`
+- `GET /api/v1/reports/operations/export`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/auth/me`
 - `POST /api/v1/users`
 
-Todas as rotas de negócio exigem autenticação. O cadastro de usuários exige `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. O papel `Viewer` permanece somente leitura.
+Todas as rotas de negócio exigem autenticação. O cadastro de usuários e os relatórios de auditoria exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. O papel `Viewer` permanece somente leitura.
 
 Após o login, envie o `accessToken` no cabeçalho `Authorization: Bearer {token}`. O refresh token não aparece no JSON: ele é mantido em cookie `HttpOnly`, rotacionado a cada renovação e armazenado no PostgreSQL somente como hash SHA-256.
 
@@ -242,6 +246,7 @@ Consulte [Planejamento de atracação — Parte 8](docs/12-planejamento-atracaca
 Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) para marcos realizados, cargas, indicadores e integridade do fluxo.
 Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para indicadores, critérios de alerta e priorização operacional.
 Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md) para SignalR, reconexão e estado de leitura.
+Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md) para captura transacional, minimização de dados e exportações CSV.
 
 ## Objetivos
 
@@ -268,6 +273,7 @@ Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tem
 - [Execução operacional — Parte 9](docs/13-execucao-operacional.md)
 - [Torre de controle — Parte 10](docs/14-torre-de-controle.md)
 - [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md)
+- [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

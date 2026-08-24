@@ -20,4 +20,5 @@ public static class AuthorizationPolicies
     public const string TransitionPortCalls = nameof(TransitionPortCalls);
     public const string ManageBerthPlanning = nameof(ManageBerthPlanning);
     public const string ManageOperationalExecution = nameof(ManageOperationalExecution);
+    public const string ViewAuditReports = nameof(ViewAuditReports);
 }

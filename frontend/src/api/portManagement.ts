@@ -1,4 +1,4 @@
-import { request } from './client'
+import { download, request } from './client'
 import type {
   PagedResponse,
   BerthWindow,
@@ -18,6 +18,8 @@ import type {
   CreateCargoOperationInput,
   ControlTower,
   NotificationCenter,
+  AuditAction,
+  AuditRecord,
 } from './types'
 
 export interface ListOptions {
@@ -29,6 +31,15 @@ export interface ListOptions {
 export interface ListPortCallsOptions extends ListOptions {
   status?: string
   portId?: string
+}
+
+export interface ListAuditOptions {
+  page?: number
+  pageSize?: number
+  action?: AuditAction
+  entityType?: string
+  fromUtc?: string
+  toUtc?: string
 }
 
 export function listVessels(options: ListOptions = {}) {
@@ -153,6 +164,20 @@ export function getNotificationCenter() {
   return request<NotificationCenter>('/api/v1/notifications/')
 }
 
+export function listAuditRecords(options: ListAuditOptions = {}) {
+  const query = createAuditSearchParams(options)
+  return request<PagedResponse<AuditRecord>>(`/api/v1/audit/?${query}`)
+}
+
+export function exportAuditRecords(options: Omit<ListAuditOptions, 'page' | 'pageSize'> = {}) {
+  const query = createAuditSearchParams(options)
+  return download(`/api/v1/audit/export?${query}`)
+}
+
+export function exportOperationalReport() {
+  return download('/api/v1/reports/operations/export')
+}
+
 export function markNotificationRead(alertId: string) {
   return request<NotificationCenter>(
     `/api/v1/notifications/${encodeURIComponent(alertId)}/read`,
@@ -223,6 +248,17 @@ function createSearchParams(options: ListPortCallsOptions) {
     query.set('portId', options.portId)
   }
 
+  return query
+}
+
+function createAuditSearchParams(options: ListAuditOptions) {
+  const query = new URLSearchParams()
+  if (options.page) query.set('page', String(options.page))
+  if (options.pageSize) query.set('pageSize', String(options.pageSize))
+  if (options.action) query.set('action', options.action)
+  if (options.entityType?.trim()) query.set('entityType', options.entityType.trim())
+  if (options.fromUtc) query.set('fromUtc', options.fromUtc)
+  if (options.toUtc) query.set('toUtc', options.toUtc)
   return query
 }
 

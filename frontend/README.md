@@ -67,5 +67,8 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Atualizações em tempo real pelo cliente oficial do SignalR.
 - Reconexão automática com consulta periódica como contingência.
 - Confirmação de leitura persistida individualmente para cada usuário.
+- Área administrativa de auditoria com filtros e paginação.
+- Exportação do histórico e do relatório operacional em CSV.
+- Neutralização de fórmulas potencialmente perigosas nas planilhas exportadas.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

@@ -22,6 +22,22 @@ export interface PagedResponse<T> {
   totalPages: number
 }
 
+export type AuditAction = 'Created' | 'Updated' | 'Deleted'
+
+export interface AuditRecord {
+  id: string
+  userId: string
+  userDisplayName: string
+  action: AuditAction
+  entityType: string
+  entityId: string
+  changedFields: string[]
+  httpMethod: string
+  requestPath: string
+  correlationId: string
+  occurredAtUtc: string
+}
+
 export interface Vessel {
   id: string
   name: string

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PortManagement.Application.Auditing;
 using PortManagement.Application.ControlTower;
 using PortManagement.Application.Notifications;
 using PortManagement.Application.Operations;
@@ -14,6 +15,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<GetAuditLogHandler>();
+        services.AddScoped<ExportAuditLogHandler>();
         services.AddScoped<RegisterVesselHandler>();
         services.AddScoped<UpdateVesselHandler>();
         services.AddScoped<GetVesselHandler>();

@@ -4,11 +4,12 @@ import { useAuth } from '../auth/AuthContext'
 import type { SecurityRole } from '../api/types'
 import { NotificationCenter } from '../components/NotificationCenter'
 
-const navigation = [
+const navigation: Array<{ to: string; label: string; code: string; end: boolean; roles?: SecurityRole[] }> = [
   { to: '/painel', label: 'Visão geral', code: 'VG', end: true },
   { to: '/navios', label: 'Navios', code: 'NV', end: false },
   { to: '/escalas', label: 'Escalas', code: 'ES', end: false },
   { to: '/agenda', label: 'Agenda', code: 'AG', end: true },
+  { to: '/auditoria', label: 'Auditoria', code: 'AU', end: true, roles: ['Administrator'] },
 ]
 
 const pageTitles: Record<string, { eyebrow: string; title: string }> = {
@@ -18,6 +19,7 @@ const pageTitles: Record<string, { eyebrow: string; title: string }> = {
   '/navios/novo': { eyebrow: 'Cadastro operacional', title: 'Novo navio' },
   '/escalas/nova': { eyebrow: 'Planejamento portuário', title: 'Nova escala' },
   '/agenda': { eyebrow: 'Planejamento portuário', title: 'Agenda de berços' },
+  '/auditoria': { eyebrow: 'Governança operacional', title: 'Auditoria e relatórios' },
 }
 
 const roleLabels: Record<SecurityRole, string> = {
@@ -33,6 +35,8 @@ export function DashboardLayout() {
   const navigate = useNavigate()
   const page = getPageTitle(location.pathname)
   const primaryRole = user?.roles[0]
+  const visibleNavigation = navigation.filter((item) =>
+    !item.roles || item.roles.some((role) => user?.roles.includes(role)))
 
   const handleLogout = async () => {
     await logout()
@@ -48,7 +52,7 @@ export function DashboardLayout() {
 
         <nav className="primary-navigation" aria-label="Navegação principal">
           <span className="navigation-label">Operação</span>
-          {navigation.map((item) => (
+          {visibleNavigation.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -94,7 +98,7 @@ export function DashboardLayout() {
       </div>
 
       <nav className="mobile-navigation" aria-label="Navegação móvel">
-        {navigation.map((item) => (
+        {visibleNavigation.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

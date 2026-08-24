@@ -61,3 +61,7 @@ O sino apresenta a quantidade de alertas não lidos. O painel lateral permite:
 ## Migration
 
 `AddNotificationReceipts` cria a tabela, o índice único e a chave estrangeira para `identity.users`.
+
+## Continuidade
+
+A trilha de mudanças e as exportações administrativas estão descritas em [Auditoria e relatórios — Parte 12](16-auditoria-e-relatorios.md).

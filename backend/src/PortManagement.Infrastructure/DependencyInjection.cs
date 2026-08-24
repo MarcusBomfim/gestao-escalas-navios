@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PortManagement.Application.Auditing;
 using PortManagement.Application.Common;
 using PortManagement.Application.ControlTower;
 using PortManagement.Application.Notifications;
@@ -27,11 +28,13 @@ public static class DependencyInjection
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         ArgumentNullException.ThrowIfNull(jwtOptions);
 
-        services.AddDbContext<PortManagementDbContext>(options =>
+        services.AddScoped<AuditSaveChangesInterceptor>();
+        services.AddDbContext<PortManagementDbContext>((provider, options) =>
             options
                 .UseNpgsql(connectionString, npgsql =>
                     npgsql.MigrationsHistoryTable("__ef_migrations_history", PortManagementDbContext.Schema))
-                .UseSnakeCaseNamingConvention());
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(provider.GetRequiredService<AuditSaveChangesInterceptor>()));
 
         services
             .AddIdentityCore<ApplicationUser>(options =>
@@ -58,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<IOperationalExecutionRepository, OperationalExecutionRepository>();
         services.AddScoped<IControlTowerRepository, ControlTowerRepository>();
         services.AddScoped<INotificationReceiptRepository, NotificationReceiptRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddSingleton(jwtOptions);

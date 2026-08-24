@@ -1505,6 +1505,171 @@ tbody tr:hover {
   background: rgba(31, 113, 165, 0.055);
 }
 
+/* Audit and reports */
+.audit-introduction {
+  align-items: flex-end;
+}
+
+.audit-introduction > div:first-child {
+  max-width: 680px;
+}
+
+.audit-export-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.audit-export-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  color: #b9d9eb;
+  background: rgba(12, 45, 65, 0.72);
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.audit-export-actions button:hover:not(:disabled) {
+  border-color: rgba(46, 164, 235, 0.55);
+  transform: translateY(-1px);
+}
+
+.audit-export-actions button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.audit-export-actions .primary-action {
+  border-color: transparent;
+  color: #f7fcff;
+  background: #147fc3;
+}
+
+.audit-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.audit-summary article {
+  min-height: 105px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(12, 42, 60, 0.9), rgba(7, 28, 42, 0.84));
+}
+
+.audit-summary span {
+  color: var(--color-muted);
+  font-size: 0.62rem;
+}
+
+.audit-summary strong {
+  color: var(--color-heading);
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+}
+
+.audit-toolbar > div:first-child strong,
+.audit-toolbar > div:first-child span {
+  display: block;
+}
+
+.audit-toolbar > div:first-child strong {
+  color: var(--color-heading);
+  font-size: 0.76rem;
+}
+
+.audit-toolbar > div:first-child span {
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: 0.6rem;
+}
+
+.audit-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.audit-filters label {
+  display: grid;
+  gap: 5px;
+}
+
+.audit-filters label > span {
+  color: var(--color-muted);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.audit-filters select {
+  min-width: 145px;
+  min-height: 36px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: #092335;
+  font-size: 0.66rem;
+}
+
+.audit-table td {
+  vertical-align: top;
+}
+
+.audit-table td:nth-child(5) {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.audit-table code {
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: #7ed4ff;
+  background: rgba(28, 135, 196, 0.12);
+  font-size: 0.58rem;
+}
+
+.audit-action {
+  display: inline-flex;
+  padding: 5px 8px;
+  border: 1px solid rgba(42, 166, 231, 0.2);
+  border-radius: 999px;
+  color: #8ed5fa;
+  background: rgba(42, 166, 231, 0.08);
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+.audit-action.created {
+  border-color: rgba(46, 213, 152, 0.2);
+  color: #74dfb7;
+  background: rgba(46, 213, 152, 0.08);
+}
+
+.audit-action.deleted {
+  border-color: rgba(255, 104, 125, 0.2);
+  color: #ff8da0;
+  background: rgba(255, 104, 125, 0.08);
+}
+
+.audit-empty {
+  min-height: 230px;
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+}
+
 .flag-code,
 .route-code {
   font-family: var(--font-mono);
@@ -3038,7 +3203,7 @@ tbody tr:hover {
     left: 12px;
     z-index: 50;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
     padding: 6px;
     border: 1px solid var(--color-border-strong);
     border-radius: 15px;
@@ -3074,6 +3239,10 @@ tbody tr:hover {
   }
 
   .window-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .audit-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3183,6 +3352,25 @@ tbody tr:hover {
   .page-introduction {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .audit-introduction {
+    align-items: stretch;
+  }
+
+  .audit-export-actions,
+  .audit-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .audit-export-actions button,
+  .audit-filters select {
+    width: 100%;
+  }
+
+  .audit-summary {
+    grid-template-columns: 1fr;
   }
 
   .data-toolbar,

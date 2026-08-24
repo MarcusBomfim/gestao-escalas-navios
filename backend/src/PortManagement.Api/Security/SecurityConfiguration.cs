@@ -75,7 +75,10 @@ internal static class SecurityConfiguration
                 policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Planner))
             .AddPolicy(
                 AuthorizationPolicies.ManageOperationalExecution,
-                policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Operator));
+                policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Operator))
+            .AddPolicy(
+                AuthorizationPolicies.ViewAuditReports,
+                policy => policy.RequireRole(SecurityRoles.Administrator));
 
         services.AddRateLimiter(options =>
         {

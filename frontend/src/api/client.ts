@@ -100,6 +100,29 @@ export async function request<T>(
   return response.json() as Promise<T>
 }
 
+export async function download(path: string, retryAfterRefresh = true): Promise<Blob> {
+  const headers = new Headers()
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`)
+  }
+
+  const response = await fetch(buildUrl(path), {
+    credentials: 'include',
+    headers,
+  })
+
+  if (response.status === 401 && retryAfterRefresh) {
+    await restoreSession()
+    return download(path, false)
+  }
+
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+
+  return response.blob()
+}
+
 async function sessionRequest(path: string, init: RequestInit = {}) {
   const response = await fetch(buildUrl(path), {
     ...init,
