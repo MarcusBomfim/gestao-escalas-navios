@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { useAuth } from '../auth/AuthContext'
 import type { SecurityRole } from '../api/types'
+import { NotificationCenter } from '../components/NotificationCenter'
 
 const navigation = [
   { to: '/painel', label: 'Visão geral', code: 'VG', end: true },
@@ -75,6 +76,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="user-menu">
+            <NotificationCenter />
             <span className="user-avatar" aria-hidden="true">
               {getInitials(user?.displayName ?? 'Usuário')}
             </span>

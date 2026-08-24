@@ -46,3 +46,7 @@ O frontend usa TanStack Query e atualiza a consulta automaticamente a cada 60 se
 O seed acrescenta uma quarta escala fictícia com janela solicitada e início vencido, gerando um alerta crítico compreensível. Ele também alinha a janela da escala em operação aos eventos realizados e completa a rastreabilidade da escala no fundeadouro.
 
 Nenhum registro representa empresa, navio ou operação real.
+
+## Continuidade
+
+A [Parte 11 — notificações em tempo real](15-notificacoes-em-tempo-real.md) distribui as mudanças desta torre pelo SignalR e mantém o estado de leitura individual de cada alerta.

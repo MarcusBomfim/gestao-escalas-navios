@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using PortManagement.Application.Planning;
 using PortManagement.Application.ControlTower;
+using PortManagement.Application.Notifications;
 using PortManagement.Application.Operations;
+using PortManagement.Application.Planning;
 using PortManagement.Application.PortCalls;
 using PortManagement.Application.ReferenceData;
 using PortManagement.Application.Security;
@@ -33,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<StartCargoOperationHandler>();
         services.AddScoped<CompleteCargoOperationHandler>();
         services.AddScoped<GetControlTowerHandler>();
+        services.AddScoped<GetNotificationCenterHandler>();
+        services.AddScoped<MarkNotificationReadHandler>();
+        services.AddScoped<MarkAllNotificationsReadHandler>();
         services.AddScoped<GetPortStructureHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshSessionHandler>();

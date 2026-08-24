@@ -17,6 +17,7 @@ import type {
   CargoOperation,
   CreateCargoOperationInput,
   ControlTower,
+  NotificationCenter,
 } from './types'
 
 export interface ListOptions {
@@ -146,6 +147,21 @@ export function getOperationalExecution(publicCode: string) {
 
 export function getControlTower() {
   return request<ControlTower>('/api/v1/control-tower')
+}
+
+export function getNotificationCenter() {
+  return request<NotificationCenter>('/api/v1/notifications/')
+}
+
+export function markNotificationRead(alertId: string) {
+  return request<NotificationCenter>(
+    `/api/v1/notifications/${encodeURIComponent(alertId)}/read`,
+    { method: 'POST' },
+  )
+}
+
+export function markAllNotificationsRead() {
+  return request<NotificationCenter>('/api/v1/notifications/read-all', { method: 'POST' })
 }
 
 export function recordOperationalMilestone(

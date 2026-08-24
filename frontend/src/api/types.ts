@@ -319,3 +319,14 @@ export interface ControlTower {
   alerts: OperationalAlert[]
   calls: ControlTowerCall[]
 }
+
+export interface NotificationItem extends OperationalAlert {
+  isRead: boolean
+  readAtUtc: string | null
+}
+
+export interface NotificationCenter {
+  generatedAtUtc: string
+  unreadCount: number
+  items: NotificationItem[]
+}

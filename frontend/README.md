@@ -63,5 +63,9 @@ O access token não é persistido no navegador. A renovação utiliza exclusivam
 - Torre de controle com atualização periódica, aderência à programação e ocupação de berços.
 - Fila filtrável de alertas críticos, de atenção e informativos.
 - Escalas monitoradas ordenadas por prioridade operacional.
+- Centro de notificações disponível em todas as telas autenticadas.
+- Atualizações em tempo real pelo cliente oficial do SignalR.
+- Reconexão automática com consulta periódica como contingência.
+- Confirmação de leitura persistida individualmente para cada usuário.
 
 As rotas de escrita também são protegidas visualmente por papel, mas a API continua sendo a autoridade final para todas as permissões.

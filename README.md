@@ -4,12 +4,13 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 10 — torre de controle e alertas operacionais concluídos**. O painel inicial agora consolida escalas ativas, ocupação de berços, aderência à programação e uma fila priorizada de desvios calculados sobre planejamento, eventos e cargas.
+O projeto está na **Parte 11 — notificações em tempo real concluídas**. Os alertas da torre agora chegam pelo SignalR, aparecem em um centro de notificações global e mantêm o estado de leitura individual de cada usuário no PostgreSQL.
 
 ## Tecnologias
 
 - C# 14 e .NET 10 LTS.
 - ASP.NET Core Web API.
+- ASP.NET Core SignalR.
 - ASP.NET Core Identity e autenticação JWT Bearer.
 - Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
@@ -143,7 +144,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 50 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte atual possui 54 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -191,6 +192,10 @@ Principais rotas:
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/start`
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/complete`
 - `GET /api/v1/control-tower`
+- `GET /api/v1/notifications`
+- `POST /api/v1/notifications/{alertId}/read`
+- `POST /api/v1/notifications/read-all`
+- `/hubs/control-tower` — canal SignalR autenticado.
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
@@ -236,6 +241,7 @@ Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para 
 Consulte [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md) para compatibilidade, agenda, concorrência e proteção contra sobreposição.
 Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) para marcos realizados, cargas, indicadores e integridade do fluxo.
 Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para indicadores, critérios de alerta e priorização operacional.
+Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md) para SignalR, reconexão e estado de leitura.
 
 ## Objetivos
 
@@ -261,6 +267,7 @@ Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para ind
 - [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md)
 - [Execução operacional — Parte 9](docs/13-execucao-operacional.md)
 - [Torre de controle — Parte 10](docs/14-torre-de-controle.md)
+- [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio

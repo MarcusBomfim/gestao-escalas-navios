@@ -28,6 +28,10 @@ export function subscribeToSession(listener: SessionListener) {
   }
 }
 
+export function getAccessToken() {
+  return accessToken
+}
+
 export async function signIn(email: string, password: string) {
   const session = await sessionRequest('/api/v1/auth/login', {
     body: JSON.stringify({ email, password }),

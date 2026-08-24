@@ -1,13 +1,15 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Api.Contracts;
-using PortManagement.Api.Endpoints.Planning;
 using PortManagement.Api.Endpoints.ControlTower;
+using PortManagement.Api.Endpoints.Notifications;
 using PortManagement.Api.Endpoints.Operations;
+using PortManagement.Api.Endpoints.Planning;
 using PortManagement.Api.Endpoints.PortCalls;
 using PortManagement.Api.Endpoints.ReferenceData;
 using PortManagement.Api.Endpoints.Security;
 using PortManagement.Api.Endpoints.Vessels;
+using PortManagement.Api.Realtime;
 using PortManagement.Api.Security;
 using PortManagement.Application;
 using PortManagement.Infrastructure;
@@ -53,6 +55,8 @@ builder.Services
     .AddApplication()
     .AddInfrastructure(databaseConnection, jwtOptions);
 builder.Services.AddApiSecurity(jwtOptions, allowedOrigins);
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<ControlTowerBroadcastService>();
 
 var app = builder.Build();
 
@@ -100,6 +104,8 @@ app.MapPortCallEndpoints();
 app.MapPlanningEndpoints();
 app.MapOperationalExecutionEndpoints();
 app.MapControlTowerEndpoints();
+app.MapNotificationEndpoints();
+app.MapHub<ControlTowerHub>("/hubs/control-tower");
 app.MapReferenceDataEndpoints();
 app.MapSecurityEndpoints();
 
