@@ -3,11 +3,11 @@
 [![CI](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml)
 [![Security](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml)
 
-Plataforma para planejar, acompanhar e auditar escalas e operações de navios em terminais portuários. O projeto será desenvolvido em C# com ASP.NET Core, React com TypeScript e PostgreSQL.
+Plataforma para planejar, acompanhar e auditar escalas e operações de navios em terminais portuários. O projeto é desenvolvido em C# com ASP.NET Core, React com TypeScript e PostgreSQL.
 
 ## Situação do projeto
 
-O projeto está na **Parte 14 — CI/CD e segurança automatizada concluídas**. Pushes e pull requests agora validam backend, frontend, imagens Docker, dependências e análise estática; releases versionadas publicam imagens no GitHub Container Registry.
+O projeto está na **Parte 15 — testes end-to-end concluídos**. Além das validações de código e segurança, o CI agora executa jornadas reais de autenticação, sessão, autorização e navegação no Chromium contra a aplicação completa em Docker.
 
 ## Tecnologias
 
@@ -23,6 +23,7 @@ O projeto está na **Parte 14 — CI/CD e segurança automatizada concluídas**.
 - PostgreSQL 17.
 - Docker e Docker Compose.
 - GitHub Actions, CodeQL e Dependabot.
+- Playwright com Chromium.
 - xUnit v3 com Microsoft Testing Platform.
 
 ## Estrutura
@@ -42,6 +43,7 @@ gestao-escalas-navios/
 │       ├── PortManagement.IntegrationTests/
 │       └── PortManagement.ArchitectureTests/
 ├── frontend/
+│   └── e2e/
 ├── infrastructure/
 ├── scripts/
 ├── docs/
@@ -151,7 +153,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte atual possui 66 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 66 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -160,6 +162,14 @@ cd .\frontend
 npm.cmd run typecheck
 npm.cmd run lint
 npm.cmd run build
+```
+
+Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 70 testes automatizados:
+
+```powershell
+npx.cmd playwright install chromium
+$env:DEMO_USER_PASSWORD = "A_MESMA_SENHA_DO_ARQUIVO_ENV"
+npm.cmd run test:e2e
 ```
 
 ## Integração e entrega contínuas
@@ -266,6 +276,7 @@ Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tem
 Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md) para captura transacional, minimização de dados e exportações CSV.
 Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md) para correlação, logs, métricas e health checks.
 Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pipelines, atualização de dependências, proteção da branch e releases no GHCR.
+Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cenários, execução local, evidências de falha e integração com Docker.
 
 ## Objetivos
 
@@ -295,6 +306,7 @@ Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pi
 - [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md)
 - [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md)
 - [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md)
+- [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

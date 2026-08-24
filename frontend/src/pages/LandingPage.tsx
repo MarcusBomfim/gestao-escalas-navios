@@ -52,7 +52,7 @@ export function LandingPage() {
             </div>
             <dl className="landing-metrics">
               <div><dt>04</dt><dd>Perfis de acesso</dd></div>
-              <div><dt>30</dt><dd>Testes automatizados</dd></div>
+              <div><dt>70</dt><dd>Testes automatizados</dd></div>
               <div><dt>100%</dt><dd>Dados sintéticos</dd></div>
             </dl>
           </div>

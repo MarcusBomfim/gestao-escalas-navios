@@ -9,6 +9,7 @@ Aplicação React com TypeScript para autenticação, consulta e execução cont
 - React Router.
 - TanStack Query.
 - Vite.
+- Playwright com Chromium.
 - CSS responsivo sem biblioteca visual externa.
 
 ## Execução local
@@ -30,17 +31,27 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
+Com API, PostgreSQL e interface iniciados pelo Docker Compose:
+
+```powershell
+npx.cmd playwright install chromium
+$env:DEMO_USER_PASSWORD = "A_MESMA_SENHA_DO_ARQUIVO_ENV"
+npm.cmd run test:e2e
+```
+
 ## Organização
 
 ```text
-src/
-├── api/          # cliente HTTP, contratos e consultas
-├── auth/         # contexto e proteção das rotas
-├── components/   # componentes reutilizáveis
-├── config/       # variáveis do ambiente
-├── layouts/      # estrutura da área autenticada
-├── pages/        # páginas da aplicação
-└── styles/       # estilos globais
+frontend/
+├── e2e/          # jornadas de aceitação no navegador
+├── src/
+│   ├── api/      # cliente HTTP, contratos e consultas
+│   ├── auth/     # contexto e proteção das rotas
+│   ├── components/
+│   ├── config/
+│   ├── layouts/
+│   └── pages/
+└── playwright.config.ts
 ```
 
 O access token não é persistido no navegador. A renovação utiliza exclusivamente o cookie `HttpOnly` emitido pela API.
