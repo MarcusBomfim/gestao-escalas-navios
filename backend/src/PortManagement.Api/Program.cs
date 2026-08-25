@@ -16,6 +16,7 @@ using PortManagement.Api.Endpoints.ReferenceData;
 using PortManagement.Api.Endpoints.Security;
 using PortManagement.Api.Endpoints.Vessels;
 using PortManagement.Api.Observability;
+using PortManagement.Api.OpenApi;
 using PortManagement.Api.Realtime;
 using PortManagement.Api.Resilience;
 using PortManagement.Api.Security;
@@ -49,6 +50,7 @@ builder.Services
         tags: ["ready"]);
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddPortManagementOpenApi();
 
 var databaseConnection = builder.Configuration.GetConnectionString("Database")
     ?? throw new InvalidOperationException(
@@ -114,6 +116,11 @@ builder.Services.AddSignalR();
 builder.Services.AddHostedService<ControlTowerBroadcastService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapPortManagementOpenApi();
+}
 
 if (args.Contains("--migrate", StringComparer.Ordinal))
 {

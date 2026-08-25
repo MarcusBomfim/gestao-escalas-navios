@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 16 — desempenho e resiliência concluídos**. A API agora possui timeout de requisição, repetição controlada para falhas transitórias do PostgreSQL e desligamento gracioso. O k6 valida limites de latência em um smoke obrigatório no CI e em uma carga controlada semanal ou manual.
+O projeto está na **Parte 17 — contrato OpenAPI concluído**. A API publica uma especificação OpenAPI 3.1 versionada e uma referência interativa somente no ambiente de desenvolvimento. Testes de contrato verificam rotas essenciais, autenticação Bearer e impedem que a documentação seja exposta em produção.
 
 ## Tecnologias
 
@@ -16,6 +16,7 @@ O projeto está na **Parte 16 — desempenho e resiliência concluídos**. A API
 - ASP.NET Core Web API.
 - ASP.NET Core SignalR.
 - ASP.NET Core Health Checks e `System.Diagnostics.Metrics`.
+- OpenAPI 3.1 e Scalar API Reference.
 - ASP.NET Core Identity e autenticação JWT Bearer.
 - Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
@@ -158,7 +159,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 73 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 76 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -169,7 +170,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 77 testes automatizados:
+Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 80 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -212,6 +213,13 @@ Rotas disponíveis:
 As rotas operacionais exigem sessão válida. O access token permanece somente na memória do navegador; ao recarregar a aplicação, o cliente solicita uma nova sessão usando o cookie `HttpOnly`. Uma resposta `401` durante uma consulta provoca uma única tentativa de renovação e repetição segura da chamada original.
 
 ## API REST
+
+No ambiente local, a especificação e a documentação interativa ficam disponíveis em:
+
+- `http://localhost:8080/openapi/v1.json` — contrato OpenAPI 3.1;
+- `http://localhost:8080/docs/` — referência interativa Scalar.
+
+Essas duas rotas não são mapeadas em produção. A interface não contém credenciais predefinidas, persistência de token, fontes externas ou recursos de agente. Para testar uma rota protegida, faça login e informe manualmente o `accessToken` no esquema `Bearer`.
 
 Principais rotas:
 
@@ -292,6 +300,7 @@ Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude
 Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pipelines, atualização de dependências, proteção da branch e releases no GHCR.
 Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cenários, execução local, evidências de falha e integração com Docker.
 Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md) para perfis k6, limites de latência, timeouts, retry e desligamento gracioso.
+Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versionamento, autenticação documentada, ambiente de exposição e testes de contrato.
 
 ## Objetivos
 
@@ -323,6 +332,7 @@ Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resilienc
 - [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md)
 - [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md)
 - [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md)
+- [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
