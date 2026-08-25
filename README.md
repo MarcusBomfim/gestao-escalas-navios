@@ -2,12 +2,13 @@
 
 [![CI](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/ci.yml)
 [![Security](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/security.yml)
+[![Performance](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/performance.yml/badge.svg)](https://github.com/MarcusBomfim/gestao-escalas-navios/actions/workflows/performance.yml)
 
 Plataforma para planejar, acompanhar e auditar escalas e operações de navios em terminais portuários. O projeto é desenvolvido em C# com ASP.NET Core, React com TypeScript e PostgreSQL.
 
 ## Situação do projeto
 
-O projeto está na **Parte 15 — testes end-to-end concluídos**. Além das validações de código e segurança, o CI agora executa jornadas reais de autenticação, sessão, autorização e navegação no Chromium contra a aplicação completa em Docker.
+O projeto está na **Parte 16 — desempenho e resiliência concluídos**. A API agora possui timeout de requisição, repetição controlada para falhas transitórias do PostgreSQL e desligamento gracioso. O k6 valida limites de latência em um smoke obrigatório no CI e em uma carga controlada semanal ou manual.
 
 ## Tecnologias
 
@@ -24,6 +25,7 @@ O projeto está na **Parte 15 — testes end-to-end concluídos**. Além das val
 - Docker e Docker Compose.
 - GitHub Actions, CodeQL e Dependabot.
 - Playwright com Chromium.
+- Grafana k6.
 - xUnit v3 com Microsoft Testing Platform.
 
 ## Estrutura
@@ -46,6 +48,8 @@ gestao-escalas-navios/
 │   └── e2e/
 ├── infrastructure/
 ├── scripts/
+├── tests/
+│   └── performance/
 ├── docs/
 └── compose.yaml
 ```
@@ -97,8 +101,9 @@ dotnet run --project .\backend\src\PortManagement.Api
 A API ficará disponível em `http://localhost:8080`. Os endpoints iniciais são:
 
 - `GET /api/v1`
+- `GET /health/live`
+- `GET /health/ready`
 - `GET /health`
-- `GET /health/database`
 
 ### Interface
 
@@ -153,7 +158,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 66 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 73 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -164,7 +169,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 70 testes automatizados:
+Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 77 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -172,9 +177,18 @@ $env:DEMO_USER_PASSWORD = "A_MESMA_SENHA_DO_ARQUIVO_ENV"
 npm.cmd run test:e2e
 ```
 
+Para executar o smoke de desempenho contra o ambiente Docker:
+
+```powershell
+$env:DEMO_USER_PASSWORD = "A_MESMA_SENHA_DO_ARQUIVO_ENV"
+powershell -ExecutionPolicy Bypass -File .\scripts\run-performance-tests.ps1 -Profile smoke
+```
+
+Use `-Profile load` somente em ambiente próprio e controlado. O resultado JSON é gravado em `TestResults/performance`, diretório ignorado pelo Git.
+
 ## Integração e entrega contínuas
 
-Os workflows em `.github/workflows` executam build, testes, lint, auditoria de dependências, CodeQL e construção das imagens em cada alteração da `main`. O Dependabot acompanha atualizações de NuGet, npm, Docker e GitHub Actions.
+Os workflows em `.github/workflows` executam build, testes, lint, auditoria de dependências, CodeQL, construção das imagens e smoke de desempenho em cada alteração da `main`. A carga controlada roda sob demanda e semanalmente. O Dependabot acompanha atualizações de NuGet, npm, Docker e GitHub Actions.
 
 Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) antes de proteger a branch ou criar a primeira versão.
 
@@ -277,6 +291,7 @@ Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.m
 Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md) para correlação, logs, métricas e health checks.
 Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pipelines, atualização de dependências, proteção da branch e releases no GHCR.
 Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cenários, execução local, evidências de falha e integração com Docker.
+Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md) para perfis k6, limites de latência, timeouts, retry e desligamento gracioso.
 
 ## Objetivos
 
@@ -307,6 +322,7 @@ Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cen
 - [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md)
 - [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md)
 - [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md)
+- [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using PortManagement.Infrastructure.Resilience;
 
 namespace PortManagement.Infrastructure.Persistence;
 
@@ -15,7 +16,7 @@ public sealed class PortManagementDbContextFactory : IDesignTimeDbContextFactory
 
         var options = new DbContextOptionsBuilder<PortManagementDbContext>()
             .UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsHistoryTable("__ef_migrations_history", PortManagementDbContext.Schema))
+                npgsql.ConfigurePortManagementDatabase(new DatabaseResilienceOptions()))
             .UseSnakeCaseNamingConvention()
             .Options;
 

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using PortManagement.Api.Auditing;
@@ -16,11 +17,13 @@ using PortManagement.Api.Endpoints.Security;
 using PortManagement.Api.Endpoints.Vessels;
 using PortManagement.Api.Observability;
 using PortManagement.Api.Realtime;
+using PortManagement.Api.Resilience;
 using PortManagement.Api.Security;
 using PortManagement.Application;
 using PortManagement.Application.Auditing;
 using PortManagement.Infrastructure;
 using PortManagement.Infrastructure.Persistence;
+using PortManagement.Infrastructure.Resilience;
 using PortManagement.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +62,29 @@ var jwtOptions = new JwtOptions
     RefreshTokenDays = builder.Configuration.GetValue("Jwt:RefreshTokenDays", 7)
 };
 jwtOptions.Validate();
+var apiResilienceOptions = new ApiResilienceOptions
+{
+    RequestTimeoutSeconds = builder.Configuration.GetValue(
+        "Resilience:RequestTimeoutSeconds",
+        30),
+    ShutdownTimeoutSeconds = builder.Configuration.GetValue(
+        "Resilience:ShutdownTimeoutSeconds",
+        30)
+};
+apiResilienceOptions.Validate();
+var databaseResilienceOptions = new DatabaseResilienceOptions
+{
+    CommandTimeoutSeconds = builder.Configuration.GetValue(
+        "Resilience:Database:CommandTimeoutSeconds",
+        30),
+    MaxRetryCount = builder.Configuration.GetValue(
+        "Resilience:Database:MaxRetryCount",
+        3),
+    MaxRetryDelaySeconds = builder.Configuration.GetValue(
+        "Resilience:Database:MaxRetryDelaySeconds",
+        5)
+};
+databaseResilienceOptions.Validate();
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .GetChildren()
@@ -70,7 +96,17 @@ var allowedOrigins = builder.Configuration
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure(databaseConnection, jwtOptions);
+    .AddInfrastructure(databaseConnection, jwtOptions, databaseResilienceOptions);
+builder.Services.AddRequestTimeouts(options =>
+{
+    options.DefaultPolicy = new RequestTimeoutPolicy
+    {
+        Timeout = TimeSpan.FromSeconds(apiResilienceOptions.RequestTimeoutSeconds),
+        TimeoutStatusCode = StatusCodes.Status504GatewayTimeout
+    };
+});
+builder.Services.Configure<HostOptions>(options =>
+    options.ShutdownTimeout = TimeSpan.FromSeconds(apiResilienceOptions.ShutdownTimeoutSeconds));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditRequestContext, HttpAuditRequestContext>();
 builder.Services.AddApiSecurity(jwtOptions, allowedOrigins);
@@ -97,6 +133,7 @@ if (args.Contains("--seed-demo", StringComparer.Ordinal))
 
 app.UseMiddleware<CorrelationAndMetricsMiddleware>();
 app.UseExceptionHandler();
+app.UseRequestTimeouts();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
@@ -147,7 +184,8 @@ app.MapControlTowerEndpoints();
 app.MapNotificationEndpoints();
 app.MapAuditEndpoints();
 app.MapObservabilityEndpoints();
-app.MapHub<ControlTowerHub>("/hubs/control-tower");
+app.MapHub<ControlTowerHub>("/hubs/control-tower")
+    .DisableRequestTimeout();
 app.MapReferenceDataEndpoints();
 app.MapSecurityEndpoints();
 

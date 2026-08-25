@@ -14,6 +14,7 @@ using PortManagement.Application.Vessels;
 using PortManagement.Infrastructure.Identity;
 using PortManagement.Infrastructure.Persistence;
 using PortManagement.Infrastructure.Persistence.Repositories;
+using PortManagement.Infrastructure.Resilience;
 using PortManagement.Infrastructure.Security;
 
 namespace PortManagement.Infrastructure;
@@ -23,16 +24,19 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         string connectionString,
-        JwtOptions jwtOptions)
+        JwtOptions jwtOptions,
+        DatabaseResilienceOptions databaseResilienceOptions)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         ArgumentNullException.ThrowIfNull(jwtOptions);
+        ArgumentNullException.ThrowIfNull(databaseResilienceOptions);
+        databaseResilienceOptions.Validate();
 
         services.AddScoped<AuditSaveChangesInterceptor>();
         services.AddDbContext<PortManagementDbContext>((provider, options) =>
             options
                 .UseNpgsql(connectionString, npgsql =>
-                    npgsql.MigrationsHistoryTable("__ef_migrations_history", PortManagementDbContext.Schema))
+                    npgsql.ConfigurePortManagementDatabase(databaseResilienceOptions))
                 .UseSnakeCaseNamingConvention()
                 .AddInterceptors(provider.GetRequiredService<AuditSaveChangesInterceptor>()));
 

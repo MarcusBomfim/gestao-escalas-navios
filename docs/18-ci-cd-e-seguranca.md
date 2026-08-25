@@ -15,7 +15,9 @@ Verificações obrigatórias:
 - `Backend`: restauração, `dotnet format`, build em `Release` e todos os testes;
 - `Frontend`: instalação reproduzível com `npm ci`, verificação de tipos, lint e build;
 - `Container images`: build real das imagens da API e da interface, executado somente após backend e frontend passarem.
-- `End-to-end`: aplicação completa em Docker, banco isolado, seed demonstrativo e testes Playwright no Chromium.
+- `End-to-end`: aplicação completa em Docker, banco isolado, seed demonstrativo, testes Playwright no Chromium e smoke de desempenho com k6.
+
+O workflow `.github/workflows/performance.yml` executa uma carga controlada aos domingos, às 08:17 UTC, e também pode ser iniciado manualmente em **Actions > Performance > Run workflow**. Ele usa dados sintéticos, credenciais efêmeras e um banco descartável; seus resultados não representam a capacidade de uma infraestrutura de produção.
 
 ### Segurança
 
@@ -61,7 +63,7 @@ Após enviar estes arquivos, configure uma ruleset para a branch `main` em **Set
 3. exija pelo menos uma aprovação quando houver outro colaborador;
 4. descarte aprovações quando novos commits forem enviados;
 5. exija que todas as conversas sejam resolvidas;
-6. marque como obrigatórios `Backend`, `Frontend`, `Container images`, `End-to-end`, `Dependency audit`, `CodeQL (csharp)` e `CodeQL (javascript-typescript)`;
+6. marque como obrigatórios `Backend`, `Frontend`, `Container images`, `End-to-end`, `Dependency audit`, `CodeQL (csharp)` e `CodeQL (javascript-typescript)`; a carga semanal não deve bloquear pull requests;
 7. exija que a branch esteja atualizada antes do merge.
 
 Os nomes dos checks aparecem para seleção depois da primeira execução dos workflows. Em um repositório mantido por uma única pessoa, mantenha a aprovação opcional até existir outro colaborador para não bloquear todos os merges.

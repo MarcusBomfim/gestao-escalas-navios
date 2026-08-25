@@ -1,0 +1,106 @@
+name: Performance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 8 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  controlled-load:
+    name: Controlled load
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COMPOSE_PROJECT_NAME: port-management-performance
+      POSTGRES_DB: port_management_performance
+      POSTGRES_USER: port_management_performance
+      POSTGRES_PORT: 5432
+      API_PORT: 8080
+      WEB_PORT: 5173
+      VITE_API_URL: http://localhost:8080
+      WEB_ORIGIN: http://localhost:5173
+
+    steps:
+      - name: Obter código-fonte
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Gerar segredos efêmeros
+        shell: bash
+        run: |
+          postgres_password="$(openssl rand -hex 24)"
+          jwt_signing_key="$(openssl rand -base64 48 | tr -d '\n')"
+          demo_user_password="Load!$(openssl rand -hex 16)Aa9"
+
+          echo "::add-mask::$postgres_password"
+          echo "::add-mask::$jwt_signing_key"
+          echo "::add-mask::$demo_user_password"
+
+          {
+            echo "POSTGRES_PASSWORD=$postgres_password"
+            echo "JWT_SIGNING_KEY=$jwt_signing_key"
+            echo "DEMO_USER_PASSWORD=$demo_user_password"
+          } >> "$GITHUB_ENV"
+
+      - name: Iniciar ambiente isolado
+        shell: bash
+        run: |
+          docker compose up --build --detach
+
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent --output /dev/null http://localhost:8080/health/ready; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "A API não ficou pronta dentro do tempo esperado."
+          docker compose ps --all
+          exit 1
+
+      - name: Executar carga controlada
+        shell: bash
+        run: |
+          mkdir -p TestResults/performance
+          docker run --rm \
+            --network host \
+            --user "$(id -u):$(id -g)" \
+            --env K6_BASE_URL=http://localhost:8080 \
+            --env K6_PROFILE=load \
+            --env K6_USER_EMAIL=viewer.demo@portmanagement.local \
+            --env K6_USER_PASSWORD \
+            --volume "$PWD/tests/performance:/scripts:ro" \
+            --volume "$PWD/TestResults/performance:/results" \
+            grafana/k6:2.2.0@sha256:9bd01d6941fca969cb61bb57d2da5ee9b385fe2aa8881df3798c196564d6ace6 \
+            run \
+            --summary-export=/results/load-summary.json \
+            /scripts/port-management.js
+
+      - name: Coletar diagnóstico
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p TestResults/performance
+          docker compose ps --all > TestResults/performance/containers.txt 2>&1 || true
+          docker compose logs --no-color > TestResults/performance/docker-compose.log 2>&1 || true
+
+      - name: Publicar resultados
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: performance-load-${{ github.run_id }}
+          path: TestResults/performance/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Encerrar ambiente
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true

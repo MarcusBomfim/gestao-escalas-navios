@@ -68,8 +68,9 @@ O job `End-to-end` do workflow `CI`:
 4. sobe todos os serviços com Docker Compose;
 5. aguarda `/health/ready` na API e `/health` na interface;
 6. executa os quatro testes;
-7. em falhas, publica relatório, traces, mídia e logs como artefato privado da execução;
-8. remove containers e volume do banco mesmo se algum passo falhar.
+7. executa o smoke de desempenho da Parte 16 contra a mesma API isolada;
+8. em falhas, publica relatório, traces, mídia e logs como artefato privado da execução;
+9. remove containers e volume do banco mesmo se algum passo falhar.
 
 O ambiente não usa credenciais permanentes, dados reais ou o banco de desenvolvimento do usuário.
 
