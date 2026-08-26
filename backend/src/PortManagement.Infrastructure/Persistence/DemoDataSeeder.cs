@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +21,6 @@ public sealed class DemoDataSeeder(
 {
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await SeedIdentityAsync(cancellationToken);
-
         if (!await database.Ports.AnyAsync(
                 port => port.UnLocode == "BRSSZ",
                 cancellationToken))
@@ -29,6 +28,7 @@ public sealed class DemoDataSeeder(
             await SeedPortDataAsync(cancellationToken);
         }
 
+        await SeedIdentityAsync(cancellationToken);
         await SeedPlanningDataAsync(cancellationToken);
         await SeedOperationalExecutionDataAsync(cancellationToken);
         await SeedControlTowerDataAsync(cancellationToken);
@@ -470,19 +470,27 @@ public sealed class DemoDataSeeder(
             new DemoUser(
                 "Administrador Demo",
                 "admin.demo@portmanagement.local",
-                SecurityRoles.Administrator),
+                SecurityRoles.Administrator,
+                null,
+                false),
             new DemoUser(
                 "Planejador Demo",
                 "planner.demo@portmanagement.local",
-                SecurityRoles.Planner),
+                SecurityRoles.Planner,
+                Guid.Parse("40000000-0000-0000-0000-000000000001"),
+                false),
             new DemoUser(
                 "Operador Demo",
                 "operator.demo@portmanagement.local",
-                SecurityRoles.Operator),
+                SecurityRoles.Operator,
+                Guid.Parse("40000000-0000-0000-0000-000000000002"),
+                false),
             new DemoUser(
                 "Visitante Demo",
                 "viewer.demo@portmanagement.local",
-                SecurityRoles.Viewer)
+                SecurityRoles.Viewer,
+                null,
+                true)
         };
 
         foreach (var demoUser in demoUsers)
@@ -498,6 +506,7 @@ public sealed class DemoDataSeeder(
                     Email = demoUser.Email,
                     EmailConfirmed = true,
                     DisplayName = demoUser.DisplayName,
+                    OrganizationId = demoUser.OrganizationId,
                     IsActive = true,
                     CreatedAtUtc = DateTimeOffset.UtcNow
                 };
@@ -505,10 +514,34 @@ public sealed class DemoDataSeeder(
                 EnsureSucceeded(creationResult, $"criar o usuário {demoUser.Email}");
             }
 
+            if (user.OrganizationId != demoUser.OrganizationId)
+            {
+                user.OrganizationId = demoUser.OrganizationId;
+                var updateResult = await userManager.UpdateAsync(user);
+                EnsureSucceeded(updateResult, $"atualizar o escopo de {demoUser.Email}");
+            }
+
             if (!await userManager.IsInRoleAsync(user, demoUser.Role))
             {
                 var assignmentResult = await userManager.AddToRoleAsync(user, demoUser.Role);
                 EnsureSucceeded(assignmentResult, $"atribuir o papel {demoUser.Role}");
+            }
+
+            var claims = await userManager.GetClaimsAsync(user);
+            var globalScopeClaim = claims.SingleOrDefault(claim =>
+                claim.Type == DataScopeClaims.Scope
+                && claim.Value == DataScopeClaims.Global);
+            if (demoUser.HasGlobalDataAccess && globalScopeClaim is null)
+            {
+                var claimResult = await userManager.AddClaimAsync(
+                    user,
+                    new Claim(DataScopeClaims.Scope, DataScopeClaims.Global));
+                EnsureSucceeded(claimResult, $"atribuir o escopo global a {demoUser.Email}");
+            }
+            else if (!demoUser.HasGlobalDataAccess && globalScopeClaim is not null)
+            {
+                var claimResult = await userManager.RemoveClaimAsync(user, globalScopeClaim);
+                EnsureSucceeded(claimResult, $"remover o escopo global de {demoUser.Email}");
             }
         }
     }
@@ -555,7 +588,12 @@ public sealed class DemoDataSeeder(
         portCall.TransitionTo(PortCallStatus.Planned, "system:demo-seed", changedAtUtc.AddMinutes(20));
     }
 
-    private sealed record DemoUser(string DisplayName, string Email, string Role);
+    private sealed record DemoUser(
+        string DisplayName,
+        string Email,
+        string Role,
+        Guid? OrganizationId,
+        bool HasGlobalDataAccess);
 
     private sealed record DemoMilestone(
         PortCallStatus Status,

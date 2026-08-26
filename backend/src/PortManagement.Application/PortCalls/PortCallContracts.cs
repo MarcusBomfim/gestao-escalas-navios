@@ -1,4 +1,5 @@
 using PortManagement.Application.Common;
+using PortManagement.Domain.Organizations;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Application.PortCalls;
@@ -64,6 +65,10 @@ public interface IPortCallRepository
     Task<bool> ActiveVesselExistsAsync(Guid vesselId, CancellationToken cancellationToken);
 
     Task<bool> ActivePortExistsAsync(Guid portId, CancellationToken cancellationToken);
+
+    Task<OrganizationType?> GetActiveOrganizationTypeAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
 
     Task<PortCall?> FindByIdempotencyKeyAsync(
         string idempotencyKey,

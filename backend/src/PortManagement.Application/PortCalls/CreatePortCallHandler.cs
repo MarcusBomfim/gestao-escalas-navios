@@ -1,12 +1,17 @@
+using System.Security.Cryptography;
+using System.Text;
 using PortManagement.Application.Common;
+using PortManagement.Application.Security;
 using PortManagement.Domain.Common;
+using PortManagement.Domain.Organizations;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Application.PortCalls;
 
 public sealed class CreatePortCallHandler(
     IPortCallRepository portCalls,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IUserDataScope dataScope)
 {
     public async Task<Result<CreatePortCallResponse>> HandleAsync(
         CreatePortCallCommand command,
@@ -27,7 +32,15 @@ public sealed class CreatePortCallHandler(
                 "O cabeçalho Idempotency-Key deve possuir no máximo 100 caracteres."));
         }
 
-        var existing = await portCalls.FindByIdempotencyKeyAsync(normalizedKey, cancellationToken);
+        var assignmentResult = await ResolveOrganizationAssignmentAsync(cancellationToken);
+        if (!assignmentResult.IsSuccess)
+        {
+            return Result.Failure<CreatePortCallResponse>(assignmentResult.Error!);
+        }
+
+        var assignment = assignmentResult.Value!;
+        var storedIdempotencyKey = ScopeIdempotencyKey(normalizedKey, assignment.OrganizationId);
+        var existing = await portCalls.FindByIdempotencyKeyAsync(storedIdempotencyKey, cancellationToken);
         if (existing is not null)
         {
             return await ExistingResponseAsync(existing.PublicCode, cancellationToken);
@@ -49,16 +62,21 @@ public sealed class CreatePortCallHandler(
 
         try
         {
+            var now = DateTimeOffset.UtcNow;
             var portCall = new PortCall(
                 Guid.NewGuid(),
                 command.VesselId,
                 command.PortId,
                 command.Purpose,
-                normalizedKey,
-                DateTimeOffset.UtcNow,
+                storedIdempotencyKey,
+                now,
                 command.VoyageNumber,
                 command.PreviousPortUnLocode,
                 command.NextPortUnLocode);
+            portCall.AssignOrganizations(
+                assignment.AgentOrganizationId,
+                assignment.ShippingLineOrganizationId,
+                now);
 
             await portCalls.AddAsync(portCall, cancellationToken);
 
@@ -69,7 +87,9 @@ public sealed class CreatePortCallHandler(
             catch (UniqueConstraintException exception)
                 when (exception.ConstraintName == "ix_port_calls_idempotency_key")
             {
-                var concurrent = await portCalls.FindByIdempotencyKeyAsync(normalizedKey, cancellationToken);
+                var concurrent = await portCalls.FindByIdempotencyKeyAsync(
+                    storedIdempotencyKey,
+                    cancellationToken);
                 if (concurrent is not null)
                 {
                     return await ExistingResponseAsync(concurrent.PublicCode, cancellationToken);
@@ -91,6 +111,48 @@ public sealed class CreatePortCallHandler(
         }
     }
 
+    private async Task<Result<OrganizationAssignment>> ResolveOrganizationAssignmentAsync(
+        CancellationToken cancellationToken)
+    {
+        if (dataScope.HasGlobalAccess)
+        {
+            return Result.Success(new OrganizationAssignment(null, null, null));
+        }
+
+        if (dataScope.OrganizationId is not Guid organizationId)
+        {
+            return Result.Failure<OrganizationAssignment>(ApplicationErrors.Forbidden(
+                "port_calls.organization_scope_required",
+                "A conta precisa estar vinculada a uma organização ativa para criar escalas."));
+        }
+
+        var organizationType = await portCalls.GetActiveOrganizationTypeAsync(
+            organizationId,
+            cancellationToken);
+
+        return organizationType switch
+        {
+            OrganizationType.ShippingAgency => Result.Success(
+                new OrganizationAssignment(organizationId, organizationId, null)),
+            OrganizationType.ShippingLine => Result.Success(
+                new OrganizationAssignment(organizationId, null, organizationId)),
+            _ => Result.Failure<OrganizationAssignment>(ApplicationErrors.Forbidden(
+                "port_calls.organization_not_allowed",
+                "A organização vinculada não pode originar uma escala."))
+        };
+    }
+
+    private static string ScopeIdempotencyKey(string key, Guid? organizationId)
+    {
+        if (!organizationId.HasValue)
+        {
+            return key;
+        }
+
+        var scopedValue = $"{organizationId.Value:N}:{key}";
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(scopedValue)));
+    }
+
     private async Task<Result<CreatePortCallResponse>> ExistingResponseAsync(
         string publicCode,
         CancellationToken cancellationToken)
@@ -100,4 +162,9 @@ public sealed class CreatePortCallHandler(
 
         return Result.Success(new CreatePortCallResponse(response, false));
     }
+
+    private sealed record OrganizationAssignment(
+        Guid? OrganizationId,
+        Guid? AgentOrganizationId,
+        Guid? ShippingLineOrganizationId);
 }

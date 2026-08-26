@@ -34,8 +34,8 @@ internal sealed class ControlTowerBroadcastService(
                     && !string.Equals(previousFingerprint, fingerprint, StringComparison.Ordinal))
                 {
                     await hub.Clients.All.SendAsync(
-                        RealtimeEvents.ControlTowerUpdated,
-                        response,
+                        RealtimeEvents.ControlTowerInvalidated,
+                        response.GeneratedAtUtc,
                         stoppingToken);
                 }
 

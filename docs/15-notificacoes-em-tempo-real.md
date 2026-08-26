@@ -5,9 +5,9 @@ Esta etapa distribui mudanças operacionais para todos os usuários autenticados
 ## Fluxo em tempo real
 
 1. `ControlTowerBroadcastService` calcula um snapshot a cada 15 segundos.
-2. Um fingerprint desconsidera o horário de geração e representa somente estados, alertas e atividades relevantes.
-3. Quando o fingerprint muda, o backend publica `ControlTowerUpdated` pelo hub.
-4. O frontend atualiza imediatamente o cache da torre e recarrega o centro de notificações.
+2. Um fingerprint representa estados, alertas, atividades e o intervalo atual das posições simuladas.
+3. Quando o fingerprint muda, o backend publica `ControlTowerInvalidated` pelo hub, sem transportar dados operacionais.
+4. Cada cliente invalida os caches da torre e das notificações e refaz as consultas autenticadas dentro do próprio escopo organizacional.
 
 O canal é:
 

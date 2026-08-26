@@ -13,4 +13,7 @@
     <ProjectReference Include="..\PortManagement.Application\PortManagement.Application.csproj" />
     <ProjectReference Include="..\PortManagement.Domain\PortManagement.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PortManagement.IntegrationTests" />
+  </ItemGroup>
 </Project>

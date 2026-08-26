@@ -9,7 +9,6 @@ import {
   markNotificationRead,
 } from '../api/portManagement'
 import type {
-  ControlTower,
   NotificationCenter as NotificationCenterData,
   NotificationItem,
   OperationalAlertSeverity,
@@ -52,8 +51,8 @@ export function NotificationCenter() {
       .configureLogging(LogLevel.Warning)
       .build()
 
-    connection.on('ControlTowerUpdated', (tower: ControlTower) => {
-      queryClient.setQueryData(['control-tower'], tower)
+    connection.on('ControlTowerInvalidated', () => {
+      void queryClient.invalidateQueries({ queryKey: ['control-tower'] })
       void queryClient.invalidateQueries({ queryKey: ['notifications'] })
     })
     connection.onreconnecting(() => isActive && setRealtimeStatus('reconnecting'))

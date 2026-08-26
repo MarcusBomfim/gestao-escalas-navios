@@ -8,5 +8,5 @@ public sealed class ControlTowerHub : Hub;
 
 public static class RealtimeEvents
 {
-    public const string ControlTowerUpdated = nameof(ControlTowerUpdated);
+    public const string ControlTowerInvalidated = nameof(ControlTowerInvalidated);
 }

@@ -10,4 +10,7 @@ public static class ApplicationErrors
 
     public static ApplicationError Conflict(string code, string description) =>
         new(code, description, ApplicationErrorType.Conflict);
+
+    public static ApplicationError Forbidden(string code, string description) =>
+        new(code, description, ApplicationErrorType.Forbidden);
 }

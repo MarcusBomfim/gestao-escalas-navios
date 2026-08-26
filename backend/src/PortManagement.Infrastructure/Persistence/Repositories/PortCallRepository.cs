@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Application.Common;
 using PortManagement.Application.PortCalls;
+using PortManagement.Application.Security;
+using PortManagement.Domain.Organizations;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Infrastructure.Persistence.Repositories;
 
-internal sealed class PortCallRepository(PortManagementDbContext database) : IPortCallRepository
+internal sealed class PortCallRepository(
+    PortManagementDbContext database,
+    IUserDataScope dataScope) : IPortCallRepository
 {
     public Task<bool> ActiveVesselExistsAsync(Guid vesselId, CancellationToken cancellationToken) =>
         database.Vessels.AnyAsync(
@@ -17,10 +21,19 @@ internal sealed class PortCallRepository(PortManagementDbContext database) : IPo
             port => port.Id == portId && port.IsActive,
             cancellationToken);
 
+    public Task<OrganizationType?> GetActiveOrganizationTypeAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        database.Organizations
+            .Where(organization => organization.Id == organizationId && organization.IsActive)
+            .Select(organization => (OrganizationType?)organization.Type)
+            .SingleOrDefaultAsync(cancellationToken);
+
     public Task<PortCall?> FindByIdempotencyKeyAsync(
         string idempotencyKey,
         CancellationToken cancellationToken) =>
         database.PortCalls
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .SingleOrDefaultAsync(
                 portCall => portCall.IdempotencyKey == idempotencyKey,
@@ -29,7 +42,9 @@ internal sealed class PortCallRepository(PortManagementDbContext database) : IPo
     public Task<PortCall?> FindTrackedByPublicCodeAsync(
         string publicCode,
         CancellationToken cancellationToken) =>
-        database.PortCalls.SingleOrDefaultAsync(
+        database.PortCalls
+            .ApplyOrganizationScope(dataScope)
+            .SingleOrDefaultAsync(
             portCall => portCall.PublicCode == publicCode,
             cancellationToken);
 
@@ -93,6 +108,7 @@ internal sealed class PortCallRepository(PortManagementDbContext database) : IPo
     private IQueryable<PortCall> DetailsQuery(bool includeHistory)
     {
         IQueryable<PortCall> query = database.PortCalls
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .Include(portCall => portCall.Vessel)
             .Include(portCall => portCall.Port)

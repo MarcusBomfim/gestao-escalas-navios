@@ -37,6 +37,14 @@ Login e renovação compartilham um limite de dez requisições por minuto para 
 
 As políticas são centralizadas na camada de aplicação. O papel é transportado como claim do JWT e validado pela autorização do ASP.NET Core antes da execução do endpoint.
 
+## Escopo organizacional
+
+Além do papel, o JWT pode transportar `organization_id`. As consultas de escalas, planejamento, execução, torre e notificações aplicam esse valor antes de filtrar, ordenar ou paginar. Uma escala é visível quando a organização do usuário corresponde à agência marítima ou ao armador associado.
+
+O administrador possui escopo global por papel. O visitante criado pelo seed recebe a claim assinada `data_scope=global` para navegar por todo o conjunto sintético em modo somente leitura. Essa claim não é aceita em formulários nem pode ser atribuída pelo endpoint comum de criação de usuários. Uma conta operacional sem organização e sem escopo global recebe uma consulta vazia por padrão.
+
+Na criação de escalas, o servidor consulta o tipo da organização autenticada e associa automaticamente uma `ShippingAgency` como agência ou uma `ShippingLine` como armador. A chave de idempotência é derivada com SHA-256 junto do identificador da organização, evitando colisões e inferência entre participantes diferentes.
+
 ## Proteções aplicadas
 
 - Senhas gerenciadas pelo ASP.NET Core Identity e nunca armazenadas em texto puro.
@@ -70,5 +78,4 @@ As tabelas de negócio permanecem no schema `port_management`. Usuários, papéi
 
 - Confirmação e recuperação de e-mail com provedor transacional.
 - Autenticação multifator para contas administrativas.
-- Escopo organizacional aplicado às consultas e comandos.
 - Auditoria de login, alteração de papéis e revogação administrativa.

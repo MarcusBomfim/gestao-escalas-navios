@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 18 — mapa operacional simulado concluído**. A torre de controle agora combina indicadores, alertas, escalas e posições sintéticas em um único snapshot, distribuído por API e SignalR. O painel apresenta um mapa esquemático próprio, sem API de mapas ou AIS, com atualização periódica, acesso aos detalhes da escala e identificação explícita de que os dados são demonstrativos.
+O projeto está na **Parte 19 — isolamento organizacional concluído**. Consultas e comandos operacionais agora aplicam a organização presente no JWT antes da paginação e da busca por identificador. Agências e armadores visualizam somente as escalas das quais participam, administradores mantêm o escopo global e o visitante demonstrativo recebe esse acesso apenas por uma claim controlada pelo servidor. O SignalR transmite somente invalidações, impedindo que um payload global contorne o filtro da API.
 
 ## Tecnologias
 
@@ -160,7 +160,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 86 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 95 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -171,7 +171,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador, incluindo a presença e a identificação do mapa demonstrativo, e elevam o total para 90 testes automatizados:
+Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador, incluindo a presença e a identificação do mapa demonstrativo, e elevam o total para 99 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -256,7 +256,7 @@ Principais rotas:
 - `GET /api/v1/auth/me`
 - `POST /api/v1/users`
 
-Todas as rotas de negócio exigem autenticação. O cadastro de usuários, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
+Todas as rotas de negócio exigem autenticação. O cadastro de usuários, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Além do papel, escalas, janelas, eventos, cargas, alertas e posições aplicam o escopo organizacional. Recursos fora desse escopo se comportam como não encontrados. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
 
 Após o login, envie o `accessToken` no cabeçalho `Authorization: Bearer {token}`. O refresh token não aparece no JSON: ele é mantido em cookie `HttpOnly`, rotacionado a cada renovação e armazenado no PostgreSQL somente como hash SHA-256.
 
@@ -303,6 +303,7 @@ Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cen
 Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md) para perfis k6, limites de latência, timeouts, retry e desligamento gracioso.
 Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versionamento, autenticação documentada, ambiente de exposição e testes de contrato.
 Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md) para o modelo de posições, atualização em tempo real, acessibilidade e limites da demonstração.
+Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md) para claims, filtros, criação de escalas, SignalR e negação por padrão.
 
 ## Objetivos
 
@@ -336,6 +337,7 @@ Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simul
 - [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md)
 - [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md)
 - [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md)
+- [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

@@ -11,8 +11,8 @@ Oferecer uma visão espacial das escalas ativas sem consumir uma API AIS, servi�
 3. o simulador calcula coordenadas relativas entre 5% e 95% da área desenhada;
 4. `ControlTowerEvaluator` inclui o tráfego no mesmo snapshot de indicadores e alertas;
 5. `GET /api/v1/control-tower` entrega o estado inicial ao navegador;
-6. o serviço em segundo plano publica atualizações autenticadas pelo hub `/hubs/control-tower`;
-7. o TanStack Query recebe o novo snapshot pelo SignalR e atualiza o mapa sem recarregar a página.
+6. o serviço em segundo plano publica somente um aviso de invalidação pelo hub `/hubs/control-tower`;
+7. o TanStack Query refaz a consulta autenticada e recebe um novo snapshot já limitado ao escopo organizacional.
 
 Indicadores e posições compartilham a mesma consulta operacional. Essa decisão evita uma segunda leitura completa do banco a cada atualização.
 

@@ -1,19 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Application.Common;
 using PortManagement.Application.Planning;
+using PortManagement.Application.Security;
 using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 using PortManagement.Domain.Ports;
 
 namespace PortManagement.Infrastructure.Persistence.Repositories;
 
-internal sealed class BerthWindowRepository(PortManagementDbContext database) : IBerthWindowRepository
+internal sealed class BerthWindowRepository(
+    PortManagementDbContext database,
+    IUserDataScope dataScope) : IBerthWindowRepository
 {
     public async Task<PortCallPlanningReference?> FindPortCallForPlanningAsync(
         string publicCode,
         CancellationToken cancellationToken)
     {
         var portCall = await database.PortCalls
+            .ApplyOrganizationScope(dataScope)
             .Include(portCall => portCall.Vessel)
             .SingleOrDefaultAsync(portCall => portCall.PublicCode == publicCode, cancellationToken);
 
@@ -34,7 +38,9 @@ internal sealed class BerthWindowRepository(PortManagementDbContext database) : 
     public Task<BerthWindow?> FindActiveTrackedByPortCallAsync(
         Guid portCallId,
         CancellationToken cancellationToken) =>
-        database.BerthWindows.SingleOrDefaultAsync(
+        database.BerthWindows
+            .ApplyOrganizationScope(dataScope)
+            .SingleOrDefaultAsync(
             window => window.PortCallId == portCallId
                 && (window.Status == BerthWindowStatus.Requested
                     || window.Status == BerthWindowStatus.Confirmed),
@@ -124,6 +130,7 @@ internal sealed class BerthWindowRepository(PortManagementDbContext database) : 
     }
 
     private IQueryable<BerthWindow> DetailsQuery() => database.BerthWindows
+        .ApplyOrganizationScope(dataScope)
         .AsNoTracking()
         .Include(window => window.PortCall)
             .ThenInclude(portCall => portCall.Vessel)

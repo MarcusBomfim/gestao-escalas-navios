@@ -22,6 +22,7 @@ using PortManagement.Api.Resilience;
 using PortManagement.Api.Security;
 using PortManagement.Application;
 using PortManagement.Application.Auditing;
+using PortManagement.Application.Security;
 using PortManagement.Infrastructure;
 using PortManagement.Infrastructure.Persistence;
 using PortManagement.Infrastructure.Resilience;
@@ -111,6 +112,7 @@ builder.Services.Configure<HostOptions>(options =>
     options.ShutdownTimeout = TimeSpan.FromSeconds(apiResilienceOptions.ShutdownTimeoutSeconds));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditRequestContext, HttpAuditRequestContext>();
+builder.Services.AddScoped<IUserDataScope, HttpUserDataScope>();
 builder.Services.AddApiSecurity(jwtOptions, allowedOrigins);
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ControlTowerBroadcastService>();

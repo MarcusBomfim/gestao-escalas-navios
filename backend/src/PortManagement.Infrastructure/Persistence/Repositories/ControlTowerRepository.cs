@@ -1,18 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Application.ControlTower;
+using PortManagement.Application.Security;
 using PortManagement.Domain.Operations;
 using PortManagement.Domain.Planning;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Infrastructure.Persistence.Repositories;
 
-internal sealed class ControlTowerRepository(PortManagementDbContext database) : IControlTowerRepository
+internal sealed class ControlTowerRepository(
+    PortManagementDbContext database,
+    IUserDataScope dataScope) : IControlTowerRepository
 {
     public async Task<ControlTowerSnapshot> GetSnapshotAsync(
         DateTimeOffset nowUtc,
         CancellationToken cancellationToken)
     {
         var portCalls = await database.PortCalls
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .Include(portCall => portCall.Vessel)
             .Include(portCall => portCall.Port)

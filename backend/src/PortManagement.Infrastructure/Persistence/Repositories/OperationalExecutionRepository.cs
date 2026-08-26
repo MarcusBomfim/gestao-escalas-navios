@@ -1,15 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using PortManagement.Application.Operations;
+using PortManagement.Application.Security;
 using PortManagement.Domain.Operations;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.Infrastructure.Persistence.Repositories;
 
-internal sealed class OperationalExecutionRepository(PortManagementDbContext database)
+internal sealed class OperationalExecutionRepository(
+    PortManagementDbContext database,
+    IUserDataScope dataScope)
     : IOperationalExecutionRepository
 {
     public Task<PortCall?> FindPortCallTrackedAsync(string publicCode, CancellationToken cancellationToken) =>
-        database.PortCalls.SingleOrDefaultAsync(
+        database.PortCalls
+            .ApplyOrganizationScope(dataScope)
+            .SingleOrDefaultAsync(
             portCall => portCall.PublicCode == publicCode,
             cancellationToken);
 
@@ -18,6 +23,7 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
         Guid cargoOperationId,
         CancellationToken cancellationToken) =>
         database.CargoOperations
+            .ApplyOrganizationScope(dataScope)
             .Include(operation => operation.PortCall)
             .SingleOrDefaultAsync(
                 operation => operation.Id == cargoOperationId
@@ -28,12 +34,15 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
         Guid portCallId,
         CancellationToken cancellationToken) =>
         database.PortCallEvents
+            .ApplyOrganizationScope(dataScope)
             .Where(portCallEvent => portCallEvent.PortCallId == portCallId
                 && portCallEvent.Classifier == TemporalClassifier.Actual)
             .MaxAsync(portCallEvent => (DateTimeOffset?)portCallEvent.OccursAtUtc, cancellationToken);
 
     public Task<bool> HasCargoOperationsAsync(Guid portCallId, CancellationToken cancellationToken) =>
-        database.CargoOperations.AnyAsync(
+        database.CargoOperations
+            .ApplyOrganizationScope(dataScope)
+            .AnyAsync(
             operation => operation.PortCallId == portCallId,
             cancellationToken);
 
@@ -41,7 +50,9 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
         Guid portCallId,
         CancellationToken cancellationToken)
     {
-        var operations = database.CargoOperations.Where(operation => operation.PortCallId == portCallId);
+        var operations = database.CargoOperations
+            .ApplyOrganizationScope(dataScope)
+            .Where(operation => operation.PortCallId == portCallId);
         return await operations.AnyAsync(cancellationToken)
             && !await operations.AnyAsync(operation => operation.ActualEndAtUtc == null, cancellationToken);
     }
@@ -51,6 +62,7 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
         CancellationToken cancellationToken)
     {
         var portCall = await database.PortCalls
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .SingleOrDefaultAsync(item => item.PublicCode == publicCode, cancellationToken);
         if (portCall is null)
@@ -59,6 +71,7 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
         }
 
         var events = await database.PortCallEvents
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .Where(portCallEvent => portCallEvent.PortCallId == portCall.Id
                 && portCallEvent.Classifier == TemporalClassifier.Actual)
@@ -75,6 +88,7 @@ internal sealed class OperationalExecutionRepository(PortManagementDbContext dat
             .ToArrayAsync(cancellationToken);
 
         var cargoEntities = await database.CargoOperations
+            .ApplyOrganizationScope(dataScope)
             .AsNoTracking()
             .Where(operation => operation.PortCallId == portCall.Id)
             .OrderBy(operation => operation.PlannedStartAtUtc)

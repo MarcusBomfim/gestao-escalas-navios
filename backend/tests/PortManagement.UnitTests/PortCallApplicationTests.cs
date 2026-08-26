@@ -1,5 +1,7 @@
 using PortManagement.Application.Common;
 using PortManagement.Application.PortCalls;
+using PortManagement.Application.Security;
+using PortManagement.Domain.Organizations;
 using PortManagement.Domain.PortCalls;
 
 namespace PortManagement.UnitTests;
@@ -36,7 +38,7 @@ public sealed class PortCallApplicationTests
     public async Task CreateRequiresAnIdempotencyKey()
     {
         var repository = new PortCallRepositoryFake();
-        var handler = new CreatePortCallHandler(repository, new UnitOfWorkFake());
+        var handler = new CreatePortCallHandler(repository, new UnitOfWorkFake(), GlobalDataScope);
 
         var result = await handler.HandleAsync(
             new CreatePortCallCommand(
@@ -63,7 +65,7 @@ public sealed class PortCallApplicationTests
             PortCallByIdempotencyKey = existing,
             Details = response
         };
-        var handler = new CreatePortCallHandler(repository, new UnitOfWorkFake());
+        var handler = new CreatePortCallHandler(repository, new UnitOfWorkFake(), GlobalDataScope);
 
         var result = await handler.HandleAsync(
             new CreatePortCallCommand(
@@ -80,6 +82,73 @@ public sealed class PortCallApplicationTests
         Assert.False(result.Value?.Created);
         Assert.Equal(existing.PublicCode, result.Value?.PortCall.PublicCode);
     }
+
+    [Fact]
+    public async Task ScopedShippingAgencyOwnsNewPortCallAndUsesScopedIdempotency()
+    {
+        var organizationId = Guid.Parse("70000000-0000-0000-0000-000000000007");
+        var repository = new PortCallRepositoryFake
+        {
+            OrganizationType = OrganizationType.ShippingAgency
+        };
+        var unitOfWork = new UnitOfWorkFake();
+        var handler = new CreatePortCallHandler(
+            repository,
+            unitOfWork,
+            new DataScopeFake(organizationId, false));
+
+        var result = await handler.HandleAsync(
+            new CreatePortCallCommand(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                PortCallPurpose.CargoOperation,
+                "request-001",
+                null,
+                null,
+                null),
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(organizationId, repository.AddedPortCall?.AgentOrganizationId);
+        Assert.Null(repository.AddedPortCall?.ShippingLineOrganizationId);
+        Assert.NotEqual("request-001", repository.AddedPortCall?.IdempotencyKey);
+        Assert.Equal(64, repository.AddedPortCall?.IdempotencyKey.Length);
+        Assert.Equal(1, unitOfWork.SaveCalls);
+    }
+
+    [Fact]
+    public async Task OrganizationWithoutOwnershipRoleCannotCreatePortCall()
+    {
+        var organizationId = Guid.Parse("80000000-0000-0000-0000-000000000008");
+        var repository = new PortCallRepositoryFake
+        {
+            OrganizationType = OrganizationType.TerminalOperator
+        };
+        var unitOfWork = new UnitOfWorkFake();
+        var handler = new CreatePortCallHandler(
+            repository,
+            unitOfWork,
+            new DataScopeFake(organizationId, false));
+
+        var result = await handler.HandleAsync(
+            new CreatePortCallCommand(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                PortCallPurpose.CargoOperation,
+                "request-002",
+                null,
+                null,
+                null),
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("port_calls.organization_not_allowed", result.Error?.Code);
+        Assert.Equal(ApplicationErrorType.Forbidden, result.Error?.Type);
+        Assert.Null(repository.AddedPortCall);
+        Assert.Equal(0, unitOfWork.SaveCalls);
+    }
+
+    private static IUserDataScope GlobalDataScope { get; } = new DataScopeFake(null, true);
 
     private static PortCall CreatePortCall() => new(
         Guid.NewGuid(),
@@ -119,11 +188,20 @@ public sealed class PortCallApplicationTests
 
         public PortCallResponse? Details { get; init; }
 
+        public OrganizationType? OrganizationType { get; init; }
+
+        public PortCall? AddedPortCall { get; private set; }
+
         public Task<bool> ActiveVesselExistsAsync(Guid vesselId, CancellationToken cancellationToken) =>
             Task.FromResult(true);
 
         public Task<bool> ActivePortExistsAsync(Guid portId, CancellationToken cancellationToken) =>
             Task.FromResult(true);
+
+        public Task<OrganizationType?> GetActiveOrganizationTypeAsync(
+            Guid organizationId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(OrganizationType);
 
         public Task<PortCall?> FindByIdempotencyKeyAsync(
             string idempotencyKey,
@@ -137,16 +215,19 @@ public sealed class PortCallApplicationTests
 
         public Task<PortCallResponse?> GetDetailsByPublicCodeAsync(
             string publicCode,
-            CancellationToken cancellationToken) =>
-            Task.FromResult(Details);
+            CancellationToken cancellationToken) => Task.FromResult(
+                Details ?? (AddedPortCall is null ? null : CreateResponse(AddedPortCall)));
 
         public Task<PagedResult<PortCallResponse>> ListAsync(
             ListPortCallsQuery query,
             CancellationToken cancellationToken) =>
             Task.FromResult(new PagedResult<PortCallResponse>([], 1, 20, 0));
 
-        public Task AddAsync(PortCall portCall, CancellationToken cancellationToken) =>
-            Task.CompletedTask;
+        public Task AddAsync(PortCall portCall, CancellationToken cancellationToken)
+        {
+            AddedPortCall = portCall;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class UnitOfWorkFake : IUnitOfWork
@@ -159,4 +240,8 @@ public sealed class PortCallApplicationTests
             return Task.FromResult(1);
         }
     }
+
+    private sealed record DataScopeFake(
+        Guid? OrganizationId,
+        bool HasGlobalAccess) : IUserDataScope;
 }

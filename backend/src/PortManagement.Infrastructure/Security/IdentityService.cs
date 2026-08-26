@@ -289,9 +289,11 @@ internal sealed class IdentityService(
         };
 
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        var dataScopeClaims = await userManager.GetClaimsAsync(user);
+        claims.AddRange(dataScopeClaims.Where(claim => claim.Type == DataScopeClaims.Scope));
         if (user.OrganizationId is Guid organizationId)
         {
-            claims.Add(new Claim("organization_id", organizationId.ToString()));
+            claims.Add(new Claim(DataScopeClaims.OrganizationId, organizationId.ToString()));
         }
 
         var credentials = new SigningCredentials(
