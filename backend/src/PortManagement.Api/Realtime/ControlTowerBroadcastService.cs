@@ -90,6 +90,7 @@ internal sealed class ControlTowerBroadcastService(
             response.Summary.InOperation,
             response.Summary.CallsRequiringAttention,
             response.Summary.CriticalAlerts,
+            response.Traffic.GeneratedAtUtc.ToUnixTimeSeconds() / 15,
             callState,
             alertState);
     }

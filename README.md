@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 17 — contrato OpenAPI concluído**. A API publica uma especificação OpenAPI 3.1 versionada e uma referência interativa somente no ambiente de desenvolvimento. Testes de contrato verificam rotas essenciais, autenticação Bearer e impedem que a documentação seja exposta em produção.
+O projeto está na **Parte 18 — mapa operacional simulado concluído**. A torre de controle agora combina indicadores, alertas, escalas e posições sintéticas em um único snapshot, distribuído por API e SignalR. O painel apresenta um mapa esquemático próprio, sem API de mapas ou AIS, com atualização periódica, acesso aos detalhes da escala e identificação explícita de que os dados são demonstrativos.
 
 ## Tecnologias
 
@@ -21,6 +21,7 @@ O projeto está na **Parte 17 — contrato OpenAPI concluído**. A API publica u
 - Entity Framework Core 10 e Npgsql.
 - React 19 e TypeScript 6.
 - React Router e TanStack Query.
+- SVG responsivo para visualização operacional sem dependência cartográfica externa.
 - Vite 8.
 - PostgreSQL 17.
 - Docker e Docker Compose.
@@ -159,7 +160,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 76 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 86 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -170,7 +171,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador e elevam o total para 80 testes automatizados:
+Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador, incluindo a presença e a identificação do mapa demonstrativo, e elevam o total para 90 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -199,7 +200,7 @@ Rotas disponíveis:
 
 - `/` — apresentação pública do projeto.
 - `/login` — seleção e autenticação de uma conta demonstrativa.
-- `/painel` — torre de controle com indicadores, alertas priorizados e escalas monitoradas.
+- `/painel` — torre de controle com mapa operacional simulado, indicadores, alertas priorizados e escalas monitoradas.
 - `/navios` — consulta paginada e busca de navios.
 - `/navios/novo` — cadastro de navio para `Administrator` e `Planner`.
 - `/navios/{id}/editar` — atualização dos dados operacionais de um navio.
@@ -238,7 +239,7 @@ Principais rotas:
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations`
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/start`
 - `POST /api/v1/operations/port-calls/{publicCode}/cargo-operations/{id}/complete`
-- `GET /api/v1/control-tower`
+- `GET /api/v1/control-tower` — inclui o snapshot de tráfego simulado.
 - `GET /api/v1/notifications`
 - `POST /api/v1/notifications/{alertId}/read`
 - `POST /api/v1/notifications/read-all`
@@ -301,6 +302,7 @@ Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pi
 Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cenários, execução local, evidências de falha e integração com Docker.
 Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md) para perfis k6, limites de latência, timeouts, retry e desligamento gracioso.
 Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versionamento, autenticação documentada, ambiente de exposição e testes de contrato.
+Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md) para o modelo de posições, atualização em tempo real, acessibilidade e limites da demonstração.
 
 ## Objetivos
 
@@ -333,6 +335,7 @@ Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versi
 - [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md)
 - [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md)
 - [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md)
+- [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

@@ -320,6 +320,40 @@ export interface ControlTowerCall {
   highestAlertSeverity: OperationalAlertSeverity | null
 }
 
+export type VesselNavigationState =
+  | 'AwaitingSchedule'
+  | 'Approaching'
+  | 'Anchored'
+  | 'Manoeuvring'
+  | 'Berthed'
+  | 'Operating'
+  | 'ReadyToSail'
+  | 'Departing'
+
+export interface VesselPosition {
+  portCallId: string
+  portCallPublicCode: string
+  vesselName: string
+  portName: string
+  terminalName: string | null
+  berthName: string | null
+  portCallStatus: string
+  navigationState: VesselNavigationState
+  xPercent: number
+  yPercent: number
+  speedKnots: number
+  courseDegrees: number
+  observedAtUtc: string
+  isSimulated: boolean
+}
+
+export interface VesselTraffic {
+  generatedAtUtc: string
+  coverageLabel: string
+  isSimulated: boolean
+  positions: VesselPosition[]
+}
+
 export interface ControlTower {
   generatedAtUtc: string
   summary: {
@@ -334,6 +368,7 @@ export interface ControlTower {
   }
   alerts: OperationalAlert[]
   calls: ControlTowerCall[]
+  traffic: VesselTraffic
 }
 
 export interface NotificationItem extends OperationalAlert {

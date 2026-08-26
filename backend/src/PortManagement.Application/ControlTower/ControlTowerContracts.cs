@@ -86,11 +86,46 @@ public sealed record ControlTowerSummaryResponse(
     decimal BerthOccupancyPercent,
     decimal ScheduleCompliancePercent);
 
+public enum VesselNavigationState
+{
+    AwaitingSchedule,
+    Approaching,
+    Anchored,
+    Manoeuvring,
+    Berthed,
+    Operating,
+    ReadyToSail,
+    Departing
+}
+
+public sealed record VesselPositionResponse(
+    Guid PortCallId,
+    string PortCallPublicCode,
+    string VesselName,
+    string PortName,
+    string? TerminalName,
+    string? BerthName,
+    PortCallStatus PortCallStatus,
+    VesselNavigationState NavigationState,
+    decimal XPercent,
+    decimal YPercent,
+    decimal SpeedKnots,
+    int CourseDegrees,
+    DateTimeOffset ObservedAtUtc,
+    bool IsSimulated);
+
+public sealed record VesselTrafficResponse(
+    DateTimeOffset GeneratedAtUtc,
+    string CoverageLabel,
+    bool IsSimulated,
+    IReadOnlyCollection<VesselPositionResponse> Positions);
+
 public sealed record ControlTowerResponse(
     DateTimeOffset GeneratedAtUtc,
     ControlTowerSummaryResponse Summary,
     IReadOnlyCollection<OperationalAlertResponse> Alerts,
-    IReadOnlyCollection<ControlTowerCallResponse> Calls);
+    IReadOnlyCollection<ControlTowerCallResponse> Calls,
+    VesselTrafficResponse Traffic);
 
 public interface IControlTowerRepository
 {

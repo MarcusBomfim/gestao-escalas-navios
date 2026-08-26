@@ -52,6 +52,9 @@ test('mantém o perfil visitante em modo somente leitura', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/painel$/)
   await expect(page.getByText('Visitante Demo')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Mapa operacional' })).toBeVisible()
+  await expect(page.getByText('Dados simulados', { exact: true })).toBeVisible()
+  await expect(page.getByText('não representam rastreamento AIS real')).toBeVisible()
 
   const navigation = page.getByRole('navigation', { name: 'Navegação principal' })
   await navigation.getByRole('link', { name: 'Navios' }).click()

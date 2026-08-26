@@ -212,6 +212,8 @@ Uma escala poderá ser cancelada antes do encerramento, desde que a permissão, 
 
 **RN-030** — Dados demonstrativos são sintéticos e podem ser restaurados periodicamente.
 
+**RN-031** — Toda posição gerada para a demonstração deve ser identificada como simulada e não pode ser apresentada como evidência AIS ou dado de navegação real.
+
 ## Invariantes críticas
 
 - Número IMO único entre navios ativos.
@@ -220,4 +222,3 @@ Uma escala poderá ser cancelada antes do encerramento, desde que a permissão, 
 - Um evento realizado não é apagado por uma nova previsão.
 - Uma ação fora do escopo organizacional nunca é autorizada.
 - Toda correção administrativa relevante é rastreável.
-

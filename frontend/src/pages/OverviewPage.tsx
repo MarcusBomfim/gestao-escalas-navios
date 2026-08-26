@@ -10,6 +10,7 @@ import type {
 } from '../api/types'
 import { QueryError, TableSkeleton } from '../components/QueryFeedback'
 import { StatusBadge } from '../components/StatusBadge'
+import { VesselTrafficMap } from '../components/VesselTrafficMap'
 
 type AlertFilter = 'All' | OperationalAlertSeverity
 
@@ -71,6 +72,8 @@ export function OverviewPage() {
         <MetricCard label="Requerem atenção" value={data.summary.callsRequiringAttention} code="AL" detail={`${data.summary.criticalAlerts} alerta(s) crítico(s)`} danger={data.summary.criticalAlerts > 0} />
         <MetricCard label="Ocupação de berços" value={formatPercent(data.summary.berthOccupancyPercent)} code="OB" detail={`${data.summary.occupiedBerths} de ${data.summary.totalBerths} berços`} accent />
       </section>
+
+      <VesselTrafficMap traffic={data.traffic} />
 
       <div className="tower-grid">
         <section className="content-card alert-queue">

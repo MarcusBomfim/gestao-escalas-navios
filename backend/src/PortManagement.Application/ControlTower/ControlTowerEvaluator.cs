@@ -86,7 +86,8 @@ public static class ControlTowerEvaluator
                 Percentage(occupiedBerths, snapshot.TotalBerths),
                 Percentage(compliantCalls, plannedCalls.Length)),
             alerts,
-            calls);
+            calls,
+            VesselTrafficSimulator.Evaluate(snapshot, now));
     }
 
     public static IReadOnlyCollection<OperationalAlertResponse> EvaluateCall(
