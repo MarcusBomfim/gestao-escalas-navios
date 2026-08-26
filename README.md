@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 19 — isolamento organizacional concluído**. Consultas e comandos operacionais agora aplicam a organização presente no JWT antes da paginação e da busca por identificador. Agências e armadores visualizam somente as escalas das quais participam, administradores mantêm o escopo global e o visitante demonstrativo recebe esse acesso apenas por uma claim controlada pelo servidor. O SignalR transmite somente invalidações, impedindo que um payload global contorne o filtro da API.
+O projeto está na **Parte 20 — recuperação segura de senha concluída**. O usuário pode solicitar um link temporário sem que a API revele se a conta existe, definir uma nova senha validada pelo ASP.NET Core Identity e encerrar automaticamente as sessões anteriores. O ambiente Docker inclui uma caixa SMTP local com Mailpit e persiste as chaves do ASP.NET Data Protection para que reinicializações não invalidem links ainda válidos.
 
 ## Tecnologias
 
@@ -25,6 +25,7 @@ O projeto está na **Parte 19 — isolamento organizacional concluído**. Consul
 - Vite 8.
 - PostgreSQL 17.
 - Docker e Docker Compose.
+- Mailpit para captura local de e-mails de desenvolvimento.
 - GitHub Actions, CodeQL e Dependabot.
 - Playwright com Chromium.
 - Grafana k6.
@@ -77,10 +78,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\check-prerequisites.ps1
 
 ### API
 
-Primeiro, inicie o PostgreSQL e aplique a migration. Use no comando a mesma senha definida em seu arquivo `.env`:
+Primeiro, inicie o PostgreSQL e a caixa SMTP local, depois aplique a migration. Use no comando a mesma senha definida em seu arquivo `.env`:
 
 ```powershell
-docker compose up -d postgres
+docker compose up -d postgres mailpit
 dotnet tool restore
 $env:PORT_MANAGEMENT_DB = "Host=localhost;Port=5432;Database=port_management;Username=port_management;Password=SUA_SENHA_LOCAL"
 dotnet ef database update `
@@ -144,6 +145,8 @@ Você pode gerar uma chave JWT local no PowerShell:
 
 Política de senha: mínimo de 12 caracteres, com letra maiúscula, letra minúscula, número, símbolo e pelo menos quatro caracteres diferentes. Os serviços `migrations` e `seed-demo` precisam terminar com o estado `Exited (0)` antes da API iniciar.
 
+O Mailpit fica disponível em `http://localhost:8025`. Ele captura localmente os e-mails de recuperação e não entrega mensagens reais. Solicite a redefinição na tela de login e abra o link recebido nessa caixa.
+
 Para acompanhar a inicialização:
 
 ```powershell
@@ -160,7 +163,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 95 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 98 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, recuperação de senha, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -171,7 +174,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os quatro testes Playwright validam os fluxos de navegador, incluindo a presença e a identificação do mapa demonstrativo, e elevam o total para 99 testes automatizados:
+Com a aplicação completa em execução, os cinco testes Playwright validam os fluxos de navegador, incluindo recuperação sem enumeração de contas, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 103 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -200,6 +203,8 @@ Rotas disponíveis:
 
 - `/` — apresentação pública do projeto.
 - `/login` — seleção e autenticação de uma conta demonstrativa.
+- `/recuperar-senha` — solicitação de um link temporário de recuperação.
+- `/redefinir-senha` — definição de uma nova senha a partir do link recebido.
 - `/painel` — torre de controle com mapa operacional simulado, indicadores, alertas priorizados e escalas monitoradas.
 - `/navios` — consulta paginada e busca de navios.
 - `/navios/novo` — cadastro de navio para `Administrator` e `Planner`.
@@ -253,6 +258,8 @@ Principais rotas:
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/forgot-password`
+- `POST /api/v1/auth/reset-password`
 - `GET /api/v1/auth/me`
 - `POST /api/v1/users`
 
@@ -304,6 +311,7 @@ Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resilienc
 Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versionamento, autenticação documentada, ambiente de exposição e testes de contrato.
 Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md) para o modelo de posições, atualização em tempo real, acessibilidade e limites da demonstração.
 Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md) para claims, filtros, criação de escalas, SignalR e negação por padrão.
+Consulte [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md) para tokens temporários, envio SMTP, proteção contra enumeração e revogação de sessões.
 
 ## Objetivos
 
@@ -338,6 +346,7 @@ Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacio
 - [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md)
 - [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md)
 - [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md)
+- [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

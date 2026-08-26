@@ -29,6 +29,23 @@ public sealed class RevokeSessionHandler(IIdentityService identityService)
         identityService.RevokeSessionAsync(command, clientIp, cancellationToken);
 }
 
+public sealed class RequestPasswordResetHandler(IIdentityService identityService)
+{
+    public Task<Result<bool>> HandleAsync(
+        RequestPasswordResetCommand command,
+        CancellationToken cancellationToken = default) =>
+        identityService.RequestPasswordResetAsync(command, cancellationToken);
+}
+
+public sealed class ResetPasswordHandler(IIdentityService identityService)
+{
+    public Task<Result<bool>> HandleAsync(
+        ResetPasswordCommand command,
+        string clientIp,
+        CancellationToken cancellationToken = default) =>
+        identityService.ResetPasswordAsync(command, clientIp, cancellationToken);
+}
+
 public sealed class GetCurrentUserHandler(IIdentityService identityService)
 {
     public Task<Result<AuthenticatedUserResponse>> HandleAsync(

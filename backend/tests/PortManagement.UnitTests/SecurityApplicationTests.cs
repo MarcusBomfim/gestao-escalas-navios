@@ -52,11 +52,42 @@ public sealed class SecurityApplicationTests
         Assert.Equal(SecurityRoles.Planner, identity.CreateUserCommand?.Role);
     }
 
+    [Fact]
+    public async Task PasswordResetHandlersDelegateTheRequestAndClientIp()
+    {
+        var identity = new IdentityServiceFake();
+        var requestHandler = new RequestPasswordResetHandler(identity);
+        var resetHandler = new ResetPasswordHandler(identity);
+        var request = new RequestPasswordResetCommand("user@example.com");
+        var reset = new ResetPasswordCommand(
+            "10000000-0000-0000-0000-000000000001",
+            "encoded-token",
+            "NewSecret!12345");
+
+        var requestResult = await requestHandler.HandleAsync(
+            request,
+            TestContext.Current.CancellationToken);
+        var resetResult = await resetHandler.HandleAsync(
+            reset,
+            "127.0.0.1",
+            TestContext.Current.CancellationToken);
+
+        Assert.True(requestResult.IsSuccess);
+        Assert.True(resetResult.IsSuccess);
+        Assert.Equal(request, identity.PasswordResetRequest);
+        Assert.Equal(reset, identity.PasswordResetCommand);
+        Assert.Equal("127.0.0.1", identity.ClientIp);
+    }
+
     private sealed class IdentityServiceFake : IIdentityService
     {
         public LoginCommand? LoginCommand { get; private set; }
 
         public CreateUserCommand? CreateUserCommand { get; private set; }
+
+        public RequestPasswordResetCommand? PasswordResetRequest { get; private set; }
+
+        public ResetPasswordCommand? PasswordResetCommand { get; private set; }
 
         public string? ClientIp { get; private set; }
 
@@ -81,6 +112,24 @@ public sealed class SecurityApplicationTests
             string clientIp,
             CancellationToken cancellationToken) =>
             Task.FromResult(Result.Success(true));
+
+        public Task<Result<bool>> RequestPasswordResetAsync(
+            RequestPasswordResetCommand command,
+            CancellationToken cancellationToken)
+        {
+            PasswordResetRequest = command;
+            return Task.FromResult(Result.Success(true));
+        }
+
+        public Task<Result<bool>> ResetPasswordAsync(
+            ResetPasswordCommand command,
+            string clientIp,
+            CancellationToken cancellationToken)
+        {
+            PasswordResetCommand = command;
+            ClientIp = clientIp;
+            return Task.FromResult(Result.Success(true));
+        }
 
         public Task<Result<AuthenticatedUserResponse>> GetUserAsync(
             Guid userId,

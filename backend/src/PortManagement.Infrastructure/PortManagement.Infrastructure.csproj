@@ -14,6 +14,9 @@
     <ProjectReference Include="..\PortManagement.Domain\PortManagement.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="PortManagement.IntegrationTests" />
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@ internal sealed class IdentityService(
     UserManager<ApplicationUser> userManager,
     PortManagementDbContext database,
     JwtOptions jwtOptions,
+    IPasswordResetEmailSender passwordResetEmailSender,
     TimeProvider timeProvider) : IIdentityService
 {
     private static readonly ApplicationError InvalidCredentials = new(
@@ -27,6 +28,11 @@ internal sealed class IdentityService(
         "security.invalid_refresh_token",
         "A sessão não é válida ou já expirou.",
         ApplicationErrorType.Unauthorized);
+
+    private static readonly ApplicationError InvalidPasswordReset = new(
+        "security.invalid_password_reset",
+        "O link de redefinição é inválido ou expirou.",
+        ApplicationErrorType.Validation);
 
     public async Task<Result<AuthTokenResponse>> LoginAsync(
         LoginCommand command,
@@ -158,6 +164,89 @@ internal sealed class IdentityService(
         {
             database.ChangeTracker.Clear();
         }
+
+        return Result.Success(true);
+    }
+
+    public async Task<Result<bool>> RequestPasswordResetAsync(
+        RequestPasswordResetCommand command,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrWhiteSpace(command.Email) || command.Email.Length > 320)
+        {
+            return Result.Success(true);
+        }
+
+        var user = await userManager.FindByEmailAsync(command.Email.Trim());
+        if (user is null || !user.IsActive || !await userManager.IsEmailConfirmedAsync(user))
+        {
+            return Result.Success(true);
+        }
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(token));
+        await passwordResetEmailSender.SendAsync(
+            user.Email ?? string.Empty,
+            user.DisplayName,
+            user.Id.ToString(),
+            encodedToken,
+            cancellationToken);
+
+        return Result.Success(true);
+    }
+
+    public async Task<Result<bool>> ResetPasswordAsync(
+        ResetPasswordCommand command,
+        string clientIp,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (!Guid.TryParse(command.UserId, out var userId) ||
+            string.IsNullOrWhiteSpace(command.Token) ||
+            command.Token.Length > 8_192 ||
+            string.IsNullOrEmpty(command.NewPassword) ||
+            command.NewPassword.Length > 256)
+        {
+            return Result.Failure<bool>(InvalidPasswordReset);
+        }
+
+        string token;
+        try
+        {
+            token = Encoding.UTF8.GetString(Base64UrlEncoder.DecodeBytes(command.Token));
+        }
+        catch (FormatException)
+        {
+            return Result.Failure<bool>(InvalidPasswordReset);
+        }
+        catch (ArgumentException)
+        {
+            return Result.Failure<bool>(InvalidPasswordReset);
+        }
+
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure<bool>(InvalidPasswordReset);
+        }
+
+        var reset = await userManager.ResetPasswordAsync(user, token, command.NewPassword);
+        if (!reset.Succeeded)
+        {
+            return reset.Errors.Any(error =>
+                    string.Equals(error.Code, "InvalidToken", StringComparison.Ordinal))
+                ? Result.Failure<bool>(InvalidPasswordReset)
+                : Result.Failure<bool>(IdentityValidationFailure(reset));
+        }
+
+        await RevokeAllActiveSessionsAsync(
+            user.Id,
+            timeProvider.GetUtcNow(),
+            clientIp,
+            cancellationToken);
 
         return Result.Success(true);
     }

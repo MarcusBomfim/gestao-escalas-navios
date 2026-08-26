@@ -93,6 +93,45 @@ internal static class SecurityEndpoints
             .WithName("Logout")
             .WithSummary("Revoga a sessão de forma idempotente");
 
+        auth.MapPost(
+                "/forgot-password",
+                async (
+                    RequestPasswordResetRequest request,
+                    RequestPasswordResetHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(
+                        new RequestPasswordResetCommand(request.Email),
+                        cancellationToken);
+                    return result.ToHttpResult(_ => Results.Accepted(
+                        value: new MessageResponse(
+                            "Se o e-mail estiver cadastrado, as instruções serão enviadas.")));
+                })
+            .RequireRateLimiting(SecurityConfiguration.AuthenticationRateLimit)
+            .WithName("RequestPasswordReset")
+            .WithSummary("Solicita uma redefinição sem revelar se a conta existe");
+
+        auth.MapPost(
+                "/reset-password",
+                async (
+                    ResetPasswordRequest request,
+                    HttpContext context,
+                    ResetPasswordHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(
+                        new ResetPasswordCommand(
+                            request.UserId,
+                            request.Token,
+                            request.NewPassword),
+                        GetClientIp(context),
+                        cancellationToken);
+                    return result.ToHttpResult(_ => Results.NoContent());
+                })
+            .RequireRateLimiting(SecurityConfiguration.AuthenticationRateLimit)
+            .WithName("ResetPassword")
+            .WithSummary("Redefine a senha com um token temporário");
+
         auth.MapGet(
                 "/me",
                 async (
@@ -184,6 +223,15 @@ internal static class SecurityEndpoints
 }
 
 internal sealed record LoginRequest(string Email, string Password);
+
+internal sealed record RequestPasswordResetRequest(string Email);
+
+internal sealed record ResetPasswordRequest(
+    string UserId,
+    string Token,
+    string NewPassword);
+
+internal sealed record MessageResponse(string Message);
 
 internal sealed record CreateUserRequest(
     string DisplayName,

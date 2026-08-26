@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.EntityFrameworkCore;
@@ -88,6 +89,23 @@ var databaseResilienceOptions = new DatabaseResilienceOptions
         5)
 };
 databaseResilienceOptions.Validate();
+var passwordRecoveryOptions = new PasswordRecoveryOptions
+{
+    SmtpHost = builder.Configuration["PasswordRecovery:SmtpHost"] ?? "localhost",
+    SmtpPort = builder.Configuration.GetValue("PasswordRecovery:SmtpPort", 1025),
+    EnableSsl = builder.Configuration.GetValue("PasswordRecovery:EnableSsl", false),
+    FromAddress = builder.Configuration["PasswordRecovery:FromAddress"]
+        ?? "no-reply@portmanagement.local",
+    FromName = builder.Configuration["PasswordRecovery:FromName"] ?? "Port Management",
+    Username = builder.Configuration["PasswordRecovery:Username"],
+    Password = builder.Configuration["PasswordRecovery:Password"],
+    PublicWebUrl = builder.Configuration["PasswordRecovery:PublicWebUrl"]
+        ?? "http://localhost:5173",
+    TokenLifetimeMinutes = builder.Configuration.GetValue(
+        "PasswordRecovery:TokenLifetimeMinutes",
+        30)
+};
+passwordRecoveryOptions.Validate();
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .GetChildren()
@@ -99,7 +117,19 @@ var allowedOrigins = builder.Configuration
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure(databaseConnection, jwtOptions, databaseResilienceOptions);
+    .AddInfrastructure(
+        databaseConnection,
+        jwtOptions,
+        databaseResilienceOptions,
+        passwordRecoveryOptions);
+var dataProtection = builder.Services
+    .AddDataProtection()
+    .SetApplicationName("PortManagement");
+var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+}
 builder.Services.AddRequestTimeouts(options =>
 {
     options.DefaultPolicy = new RequestTimeoutPolicy

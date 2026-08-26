@@ -577,6 +577,20 @@
   transform: none;
 }
 
+.auth-inline-link {
+  width: max-content;
+  margin-left: auto;
+  color: #84ccfa;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.auth-inline-link:hover {
+  color: #c8e9ff;
+  text-decoration: underline;
+}
+
 .form-error {
   padding: 11px 13px;
   border: 1px solid rgba(255, 112, 112, 0.22);
@@ -595,6 +609,38 @@
 .login-help code {
   color: #b8dff8;
   font-family: var(--font-mono);
+}
+
+.recovery-result {
+  display: grid;
+  gap: 12px;
+  margin-top: 25px;
+  padding: 18px;
+  border: 1px solid rgba(83, 185, 255, 0.24);
+  border-radius: 12px;
+  color: var(--color-text);
+  background: rgba(29, 130, 199, 0.1);
+}
+
+.recovery-result strong {
+  color: var(--color-heading);
+  font-size: 0.82rem;
+}
+
+.recovery-result p,
+.password-requirements {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.recovery-result .submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  text-decoration: none;
 }
 
 /* Dashboard shell */

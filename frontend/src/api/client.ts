@@ -43,6 +43,22 @@ export async function signIn(email: string, password: string) {
   return session
 }
 
+export function requestPasswordReset(email: string) {
+  return request<{ message: string }>('/api/v1/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+    headers: { 'Content-Type': 'application/json' },
+  }, false)
+}
+
+export function resetPassword(userId: string, token: string, newPassword: string) {
+  return request<void>('/api/v1/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ userId, token, newPassword }),
+    headers: { 'Content-Type': 'application/json' },
+  }, false)
+}
+
 export async function restoreSession() {
   if (!refreshPromise) {
     refreshPromise = sessionRequest('/api/v1/auth/refresh')

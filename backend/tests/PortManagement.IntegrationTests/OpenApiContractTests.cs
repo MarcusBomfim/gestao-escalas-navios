@@ -37,6 +37,12 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.True(paths.TryGetProperty("/api/v1/port-calls", out _));
         Assert.True(paths.TryGetProperty("/api/v1/vessels", out _));
         Assert.True(paths.TryGetProperty("/api/v1/auth/login", out var login));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/auth/forgot-password",
+            out var forgotPassword));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/auth/reset-password",
+            out var resetPassword));
 
         var schemes = root
             .GetProperty("components")
@@ -52,6 +58,8 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.True(protectedOperation.GetProperty("responses").TryGetProperty("401", out _));
         Assert.True(protectedOperation.GetProperty("responses").TryGetProperty("403", out _));
         Assert.False(login.GetProperty("post").TryGetProperty("security", out _));
+        Assert.False(forgotPassword.GetProperty("post").TryGetProperty("security", out _));
+        Assert.False(resetPassword.GetProperty("post").TryGetProperty("security", out _));
     }
 
     [Fact]

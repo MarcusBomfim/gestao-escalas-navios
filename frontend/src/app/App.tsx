@@ -6,6 +6,8 @@ import { RequireRole } from '../auth/RequireRole'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { PortCallsPage } from '../pages/PortCallsPage'
 import { PortCallDetailPage } from '../pages/PortCallDetailPage'
@@ -35,6 +37,8 @@ export function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+            <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
             <Route element={<RequireAuth />}>
               <Route element={<DashboardLayout />}>

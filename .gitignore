@@ -17,6 +17,7 @@ coverage/
 !.env.example
 appsettings.Development.local.json
 secrets/
+.data-protection-keys/
 
 # IDE e sistema operacional
 .idea/

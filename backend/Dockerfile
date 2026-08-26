@@ -23,6 +23,7 @@ LABEL org.opencontainers.image.title="Port Management API" \
       org.opencontainers.image.source="https://github.com/MarcusBomfim/gestao-escalas-navios"
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build --chown=appuser:appgroup /app/publish .
+RUN mkdir -p /app/data-protection-keys && chown appuser:appgroup /app/data-protection-keys
 USER appuser
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080

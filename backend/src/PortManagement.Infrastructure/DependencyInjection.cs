@@ -25,12 +25,15 @@ public static class DependencyInjection
         this IServiceCollection services,
         string connectionString,
         JwtOptions jwtOptions,
-        DatabaseResilienceOptions databaseResilienceOptions)
+        DatabaseResilienceOptions databaseResilienceOptions,
+        PasswordRecoveryOptions passwordRecoveryOptions)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         ArgumentNullException.ThrowIfNull(jwtOptions);
         ArgumentNullException.ThrowIfNull(databaseResilienceOptions);
+        ArgumentNullException.ThrowIfNull(passwordRecoveryOptions);
         databaseResilienceOptions.Validate();
+        passwordRecoveryOptions.Validate();
 
         services.AddScoped<AuditSaveChangesInterceptor>();
         services.AddDbContext<PortManagementDbContext>((provider, options) =>
@@ -55,7 +58,12 @@ public static class DependencyInjection
                 options.User.RequireUniqueEmail = true;
             })
             .AddRoles<ApplicationRole>()
-            .AddEntityFrameworkStores<PortManagementDbContext>();
+            .AddEntityFrameworkStores<PortManagementDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+            options.TokenLifespan = TimeSpan.FromMinutes(
+                passwordRecoveryOptions.TokenLifetimeMinutes));
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IVesselRepository, VesselRepository>();
@@ -67,8 +75,10 @@ public static class DependencyInjection
         services.AddScoped<INotificationReceiptRepository, NotificationReceiptRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPasswordResetEmailSender, SmtpPasswordResetEmailSender>();
         services.AddScoped<DemoDataSeeder>();
         services.AddSingleton(jwtOptions);
+        services.AddSingleton(passwordRecoveryOptions);
         services.AddSingleton(TimeProvider.System);
 
         return services;

@@ -46,6 +46,19 @@ test('rejeita credenciais inválidas sem iniciar uma sessão', async ({ page }) 
   await expect(page).toHaveURL(/\/login$/)
 })
 
+test('solicita recuperação sem revelar se o e-mail está cadastrado', async ({ page }) => {
+  await page.goto('/recuperar-senha')
+
+  await page.getByLabel('E-mail', { exact: true }).fill('usuario.inexistente@portmanagement.local')
+  await page.getByRole('button', { name: 'Enviar instruções' }).click()
+
+  await expect(page.getByRole('status')).toContainText('Solicitação recebida')
+  await expect(page.getByRole('status')).toContainText(
+    'Se o e-mail estiver cadastrado, as instruções serão enviadas.',
+  )
+  await expect(page.getByRole('link', { name: 'Voltar para o login' })).toBeVisible()
+})
+
 test('mantém o perfil visitante em modo somente leitura', async ({ page }) => {
   await page.goto('/login')
   await signInAs(page, 'Visitante')

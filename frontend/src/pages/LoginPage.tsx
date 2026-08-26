@@ -106,6 +106,10 @@ export function LoginPage() {
               />
             </label>
 
+            <Link className="auth-inline-link" to="/recuperar-senha">
+              Esqueci minha senha
+            </Link>
+
             {error && <div className="form-error" role="alert">{error}</div>}
 
             <button className="button primary submit-button" disabled={isSubmitting} type="submit">
