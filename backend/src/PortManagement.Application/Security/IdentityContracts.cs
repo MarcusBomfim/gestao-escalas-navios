@@ -22,6 +22,43 @@ public sealed record CreateUserCommand(
     string Role,
     Guid? OrganizationId);
 
+public sealed record ListUsersQuery(
+    int Page = 1,
+    int PageSize = 20,
+    string? Search = null,
+    string? Role = null,
+    bool? IsActive = null);
+
+public sealed record UpdateUserCommand(
+    Guid UserId,
+    Guid ActingUserId,
+    string DisplayName,
+    string Role,
+    Guid? OrganizationId,
+    bool IsActive,
+    string ExpectedVersion,
+    string ClientIp);
+
+public sealed record ManagedUserResponse(
+    Guid Id,
+    string DisplayName,
+    string Email,
+    Guid? OrganizationId,
+    string? OrganizationName,
+    bool IsActive,
+    DateTimeOffset CreatedAtUtc,
+    string Version,
+    IReadOnlyCollection<string> Roles);
+
+public sealed record OrganizationOptionResponse(
+    Guid Id,
+    string Name,
+    string Type);
+
+public sealed record UserManagementOptionsResponse(
+    IReadOnlyCollection<string> Roles,
+    IReadOnlyCollection<OrganizationOptionResponse> Organizations);
+
 public sealed record AuthenticatedUserResponse(
     Guid Id,
     string DisplayName,
@@ -65,8 +102,23 @@ public interface IIdentityService
         Guid userId,
         CancellationToken cancellationToken);
 
+}
+
+public interface IUserAdministrationService
+{
     Task<Result<AuthenticatedUserResponse>> CreateUserAsync(
         CreateUserCommand command,
+        CancellationToken cancellationToken);
+
+    Task<Result<PagedResult<ManagedUserResponse>>> ListUsersAsync(
+        ListUsersQuery query,
+        CancellationToken cancellationToken);
+
+    Task<Result<UserManagementOptionsResponse>> GetUserManagementOptionsAsync(
+        CancellationToken cancellationToken);
+
+    Task<Result<ManagedUserResponse>> UpdateUserAsync(
+        UpdateUserCommand command,
         CancellationToken cancellationToken);
 }
 

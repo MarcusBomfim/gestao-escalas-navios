@@ -21,6 +21,12 @@ import type {
   AuditAction,
   AuditRecord,
   ObservabilitySummary,
+  ManagedUser,
+  UserManagementOptions,
+  CreateUserInput,
+  UpdateUserInput,
+  SecurityRole,
+  AuthenticatedUser,
 } from './types'
 
 export interface ListOptions {
@@ -43,6 +49,11 @@ export interface ListAuditOptions {
   toUtc?: string
 }
 
+export interface ListUsersOptions extends ListOptions {
+  role?: SecurityRole
+  isActive?: boolean
+}
+
 export function listVessels(options: ListOptions = {}) {
   const query = createSearchParams(options)
   query.set('activeOnly', 'true')
@@ -56,6 +67,28 @@ export function listPortCalls(options: ListPortCallsOptions = {}) {
 
 export function listPorts() {
   return request<PortReference[]>('/api/v1/reference-data/ports')
+}
+
+export function listUsers(options: ListUsersOptions = {}) {
+  const query = createSearchParams(options)
+  if (options.role) query.set('role', options.role)
+  if (options.isActive !== undefined) query.set('isActive', String(options.isActive))
+  return request<PagedResponse<ManagedUser>>(`/api/v1/users/?${query}`)
+}
+
+export function getUserManagementOptions() {
+  return request<UserManagementOptions>('/api/v1/users/options')
+}
+
+export function createUser(input: CreateUserInput) {
+  return request<AuthenticatedUser>('/api/v1/users/', jsonRequest('POST', input))
+}
+
+export function updateUser(id: string, input: UpdateUserInput) {
+  return request<ManagedUser>(
+    `/api/v1/users/${encodeURIComponent(id)}`,
+    jsonRequest('PUT', input),
+  )
 }
 
 export function getVessel(id: string) {

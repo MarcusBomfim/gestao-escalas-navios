@@ -151,6 +151,42 @@ internal static class SecurityEndpoints
             .WithTags("Users")
             .RequireAuthorization(AuthorizationPolicies.ManageUsers);
 
+        users.MapGet(
+                "/",
+                async (
+                    int? page,
+                    int? pageSize,
+                    string? search,
+                    string? role,
+                    bool? isActive,
+                    ListUsersHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(
+                        new ListUsersQuery(
+                            page ?? 1,
+                            pageSize ?? 20,
+                            search,
+                            role,
+                            isActive),
+                        cancellationToken);
+                    return result.ToHttpResult(Results.Ok);
+                })
+            .WithName("ListUsers")
+            .WithSummary("Lista usuários com paginação, busca e filtros");
+
+        users.MapGet(
+                "/options",
+                async (
+                    GetUserManagementOptionsHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(cancellationToken);
+                    return result.ToHttpResult(Results.Ok);
+                })
+            .WithName("GetUserManagementOptions")
+            .WithSummary("Lista papéis e organizações disponíveis para usuários");
+
         users.MapPost(
                 "/",
                 async (
@@ -170,6 +206,32 @@ internal static class SecurityEndpoints
                 })
             .WithName("CreateUser")
             .WithSummary("Cria um usuário e atribui um papel");
+
+        users.MapPut(
+                "/{id:guid}",
+                async (
+                    Guid id,
+                    UpdateUserRequest request,
+                    ClaimsPrincipal principal,
+                    HttpContext context,
+                    UpdateUserHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(
+                        new UpdateUserCommand(
+                            id,
+                            GetUserId(principal),
+                            request.DisplayName,
+                            request.Role,
+                            request.OrganizationId,
+                            request.IsActive,
+                            request.ExpectedVersion,
+                            GetClientIp(context)),
+                        cancellationToken);
+                    return result.ToHttpResult(Results.Ok);
+                })
+            .WithName("UpdateUser")
+            .WithSummary("Atualiza perfil, escopo e situação de um usuário");
 
         return endpoints;
     }
@@ -239,6 +301,13 @@ internal sealed record CreateUserRequest(
     string Password,
     string Role,
     Guid? OrganizationId);
+
+internal sealed record UpdateUserRequest(
+    string DisplayName,
+    string Role,
+    Guid? OrganizationId,
+    bool IsActive,
+    string ExpectedVersion);
 
 internal sealed record SessionResponse(
     string AccessToken,

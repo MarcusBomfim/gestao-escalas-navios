@@ -75,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationReceiptRepository, NotificationReceiptRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IUserAdministrationService, UserAdministrationService>();
         services.AddScoped<IPasswordResetEmailSender, SmtpPasswordResetEmailSender>();
         services.AddScoped<DemoDataSeeder>();
         services.AddSingleton(jwtOptions);

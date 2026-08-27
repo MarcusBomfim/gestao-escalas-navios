@@ -79,7 +79,56 @@ public sealed class SecurityApplicationTests
         Assert.Equal("127.0.0.1", identity.ClientIp);
     }
 
-    private sealed class IdentityServiceFake : IIdentityService
+    [Fact]
+    public async Task ListUsersHandlerRejectsInvalidPaginationBeforeQueryingIdentity()
+    {
+        var identity = new IdentityServiceFake();
+        var handler = new ListUsersHandler(identity);
+
+        var result = await handler.HandleAsync(
+            new ListUsersQuery(Page: 0),
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("security.invalid_pagination", result.Error?.Code);
+        Assert.Null(identity.ListUsersQuery);
+    }
+
+    [Fact]
+    public async Task UserManagementHandlersDelegateFiltersAndUpdateContext()
+    {
+        var identity = new IdentityServiceFake();
+        var listHandler = new ListUsersHandler(identity);
+        var optionsHandler = new GetUserManagementOptionsHandler(identity);
+        var updateHandler = new UpdateUserHandler(identity);
+        var query = new ListUsersQuery(2, 10, "operador", SecurityRoles.Operator, true);
+        var command = new UpdateUserCommand(
+            Guid.Parse("10000000-0000-0000-0000-000000000001"),
+            Guid.Parse("10000000-0000-0000-0000-000000000002"),
+            "Operador Atualizado",
+            SecurityRoles.Operator,
+            Guid.Parse("40000000-0000-0000-0000-000000000002"),
+            true,
+            "version-1",
+            "127.0.0.1");
+
+        var listResult = await listHandler.HandleAsync(
+            query,
+            TestContext.Current.CancellationToken);
+        var optionsResult = await optionsHandler.HandleAsync(
+            TestContext.Current.CancellationToken);
+        var updateResult = await updateHandler.HandleAsync(
+            command,
+            TestContext.Current.CancellationToken);
+
+        Assert.True(listResult.IsSuccess);
+        Assert.True(optionsResult.IsSuccess);
+        Assert.True(updateResult.IsSuccess);
+        Assert.Equal(query, identity.ListUsersQuery);
+        Assert.Equal(command, identity.UpdateUserCommand);
+    }
+
+    private sealed class IdentityServiceFake : IIdentityService, IUserAdministrationService
     {
         public LoginCommand? LoginCommand { get; private set; }
 
@@ -88,6 +137,10 @@ public sealed class SecurityApplicationTests
         public RequestPasswordResetCommand? PasswordResetRequest { get; private set; }
 
         public ResetPasswordCommand? PasswordResetCommand { get; private set; }
+
+        public ListUsersQuery? ListUsersQuery { get; private set; }
+
+        public UpdateUserCommand? UpdateUserCommand { get; private set; }
 
         public string? ClientIp { get; private set; }
 
@@ -144,6 +197,32 @@ public sealed class SecurityApplicationTests
             return Task.FromResult(Result.Success(CreateUserResponse(command.Role)));
         }
 
+        public Task<Result<PagedResult<ManagedUserResponse>>> ListUsersAsync(
+            ListUsersQuery query,
+            CancellationToken cancellationToken)
+        {
+            ListUsersQuery = query;
+            return Task.FromResult(Result.Success(new PagedResult<ManagedUserResponse>(
+                [CreateManagedUserResponse()],
+                query.Page,
+                query.PageSize,
+                1)));
+        }
+
+        public Task<Result<UserManagementOptionsResponse>> GetUserManagementOptionsAsync(
+            CancellationToken cancellationToken) =>
+            Task.FromResult(Result.Success(new UserManagementOptionsResponse(
+                SecurityRoles.All,
+                [])));
+
+        public Task<Result<ManagedUserResponse>> UpdateUserAsync(
+            UpdateUserCommand command,
+            CancellationToken cancellationToken)
+        {
+            UpdateUserCommand = command;
+            return Task.FromResult(Result.Success(CreateManagedUserResponse(command.Role)));
+        }
+
         private static AuthTokenResponse CreateTokenResponse() => new(
             "access-token",
             "refresh-token",
@@ -156,6 +235,18 @@ public sealed class SecurityApplicationTests
             "Usuário Demo",
             "user@example.com",
             null,
+            [role]);
+
+        private static ManagedUserResponse CreateManagedUserResponse(
+            string role = SecurityRoles.Viewer) => new(
+            Guid.Parse("10000000-0000-0000-0000-000000000001"),
+            "Usuário Demo",
+            "user@example.com",
+            null,
+            null,
+            true,
+            DateTimeOffset.UtcNow,
+            "version-1",
             [role]);
     }
 }

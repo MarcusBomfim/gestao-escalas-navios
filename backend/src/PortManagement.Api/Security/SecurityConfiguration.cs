@@ -2,10 +2,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using PortManagement.Api.Observability;
 using PortManagement.Application.Security;
+using PortManagement.Infrastructure.Identity;
 using PortManagement.Infrastructure.Security;
 
 namespace PortManagement.Api.Security;
@@ -51,6 +53,31 @@ internal static class SecurityConfiguration
                         }
 
                         return Task.CompletedTask;
+                    },
+                    OnTokenValidated = async context =>
+                    {
+                        var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var tokenStamp = context.Principal?.FindFirstValue(
+                            DataScopeClaims.SecurityStamp);
+                        if (!Guid.TryParse(userId, out var parsedUserId) ||
+                            string.IsNullOrWhiteSpace(tokenStamp))
+                        {
+                            context.Fail("Sessão inválida.");
+                            return;
+                        }
+
+                        var userManager = context.HttpContext.RequestServices
+                            .GetRequiredService<UserManager<ApplicationUser>>();
+                        var user = await userManager.FindByIdAsync(parsedUserId.ToString());
+                        if (user is null ||
+                            !user.IsActive ||
+                            !string.Equals(
+                                user.SecurityStamp,
+                                tokenStamp,
+                                StringComparison.Ordinal))
+                        {
+                            context.Fail("Sessão inválida.");
+                        }
                     }
                 };
             });

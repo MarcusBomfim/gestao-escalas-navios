@@ -2242,6 +2242,35 @@ tbody tr:hover {
   background: rgba(172, 46, 46, 0.07);
 }
 
+.form-feedback.success {
+  border-color: rgba(79, 209, 144, 0.24);
+  color: #a7f3d0;
+  background: rgba(20, 128, 78, 0.12);
+}
+
+.user-editor {
+  scroll-margin-top: 96px;
+}
+
+.user-filters {
+  flex-wrap: wrap;
+}
+
+.table-action button {
+  padding: 0;
+  border: 0;
+  color: #8fd5ff;
+  background: transparent;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.table-action button:hover {
+  color: #d6f1ff;
+  text-decoration: underline;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;

@@ -25,6 +25,7 @@ test('preserva o destino protegido, restaura a sessão e realiza logout', async 
   const navigation = page.getByRole('navigation', { name: 'Navegação principal' })
   await expect(navigation.getByRole('link', { name: 'Auditoria' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Saúde' })).toHaveCount(0)
+  await expect(navigation.getByRole('link', { name: 'Usuários' })).toHaveCount(0)
 
   await page.reload()
   await expect(page).toHaveURL(/\/navios$/)
@@ -77,4 +78,22 @@ test('mantém o perfil visitante em modo somente leitura', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Cadastrar navio' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Auditoria' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Saúde' })).toHaveCount(0)
+  await expect(navigation.getByRole('link', { name: 'Usuários' })).toHaveCount(0)
+})
+
+test('permite ao administrador consultar e iniciar o cadastro de usuários', async ({ page }) => {
+  await page.goto('/login')
+  await signInAs(page, 'Administrador')
+
+  const navigation = page.getByRole('navigation', { name: 'Navegação principal' })
+  await navigation.getByRole('link', { name: 'Usuários' }).click()
+
+  await expect(page).toHaveURL(/\/usuarios$/)
+  await expect(page.getByRole('heading', { name: 'Usuários e permissões' })).toBeVisible()
+  await expect(page.getByText('admin.demo@portmanagement.local')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Cadastrar usuário' }).click()
+  await expect(page.getByText('Cadastrar usuário', { exact: true }).last()).toBeVisible()
+  await expect(page.getByLabel('Senha inicial')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Salvar alterações' })).toHaveCount(0)
 })

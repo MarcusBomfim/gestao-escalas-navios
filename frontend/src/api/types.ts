@@ -8,6 +8,45 @@ export interface AuthenticatedUser {
   roles: SecurityRole[]
 }
 
+export interface ManagedUser {
+  id: string
+  displayName: string
+  email: string
+  organizationId: string | null
+  organizationName: string | null
+  isActive: boolean
+  createdAtUtc: string
+  version: string
+  roles: SecurityRole[]
+}
+
+export interface OrganizationOption {
+  id: string
+  name: string
+  type: string
+}
+
+export interface UserManagementOptions {
+  roles: SecurityRole[]
+  organizations: OrganizationOption[]
+}
+
+export interface CreateUserInput {
+  displayName: string
+  email: string
+  password: string
+  role: SecurityRole
+  organizationId: string | null
+}
+
+export interface UpdateUserInput {
+  displayName: string
+  role: SecurityRole
+  organizationId: string | null
+  isActive: boolean
+  expectedVersion: string
+}
+
 export interface SessionResponse {
   accessToken: string
   accessTokenExpiresAtUtc: string

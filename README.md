@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 20 — recuperação segura de senha concluída**. O usuário pode solicitar um link temporário sem que a API revele se a conta existe, definir uma nova senha validada pelo ASP.NET Core Identity e encerrar automaticamente as sessões anteriores. O ambiente Docker inclui uma caixa SMTP local com Mailpit e persiste as chaves do ASP.NET Data Protection para que reinicializações não invalidem links ainda válidos.
+O projeto está na **Parte 21 — gestão administrativa de usuários concluída**. Administradores agora contam com uma interface para pesquisar, filtrar, cadastrar e atualizar usuários, perfis, organizações e situações de acesso. O backend impede autobloqueio e remoção do último administrador, protege edições concorrentes e invalida imediatamente sessões após mudanças de permissão.
 
 ## Tecnologias
 
@@ -163,7 +163,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 98 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, recuperação de senha, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 100 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, recuperação de senha, gestão de usuários, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -174,7 +174,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os cinco testes Playwright validam os fluxos de navegador, incluindo recuperação sem enumeração de contas, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 103 testes automatizados:
+Com a aplicação completa em execução, os seis testes Playwright validam os fluxos de navegador, incluindo recuperação sem enumeração de contas, gestão administrativa, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 106 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -213,6 +213,7 @@ Rotas disponíveis:
 - `/escalas/nova` — criação idempotente de uma escala.
 - `/escalas/{publicCode}` — detalhes, planejamento, marcos realizados, cargas, indicadores e histórico.
 - `/agenda` — agenda diária de janelas solicitadas e confirmadas por berço.
+- `/usuarios` — gestão de contas, perfis, organizações e acessos para `Administrator`.
 - `/auditoria` — evidências, filtros e relatórios exclusivos do `Administrator`.
 - `/observabilidade` — métricas e prontidão da instância para o `Administrator`.
 
@@ -261,7 +262,10 @@ Principais rotas:
 - `POST /api/v1/auth/forgot-password`
 - `POST /api/v1/auth/reset-password`
 - `GET /api/v1/auth/me`
+- `GET /api/v1/users`
+- `GET /api/v1/users/options`
 - `POST /api/v1/users`
+- `PUT /api/v1/users/{id}`
 
 Todas as rotas de negócio exigem autenticação. O cadastro de usuários, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Além do papel, escalas, janelas, eventos, cargas, alertas e posições aplicam o escopo organizacional. Recursos fora desse escopo se comportam como não encontrados. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
 
@@ -312,6 +316,7 @@ Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versi
 Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md) para o modelo de posições, atualização em tempo real, acessibilidade e limites da demonstração.
 Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md) para claims, filtros, criação de escalas, SignalR e negação por padrão.
 Consulte [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md) para tokens temporários, envio SMTP, proteção contra enumeração e revogação de sessões.
+Consulte [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md) para perfis, organizações, bloqueio imediato, concorrência e proteção do último administrador.
 
 ## Objetivos
 
@@ -347,6 +352,7 @@ Consulte [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura
 - [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md)
 - [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md)
 - [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md)
+- [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 

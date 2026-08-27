@@ -36,6 +36,9 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.True(paths.TryGetProperty("/api/v1/control-tower", out var controlTower));
         Assert.True(paths.TryGetProperty("/api/v1/port-calls", out _));
         Assert.True(paths.TryGetProperty("/api/v1/vessels", out _));
+        Assert.True(paths.TryGetProperty("/api/v1/users", out var users));
+        Assert.True(paths.TryGetProperty("/api/v1/users/options", out var userOptions));
+        Assert.True(paths.TryGetProperty("/api/v1/users/{id}", out var updateUser));
         Assert.True(paths.TryGetProperty("/api/v1/auth/login", out var login));
         Assert.True(paths.TryGetProperty(
             "/api/v1/auth/forgot-password",
@@ -60,6 +63,9 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.False(login.GetProperty("post").TryGetProperty("security", out _));
         Assert.False(forgotPassword.GetProperty("post").TryGetProperty("security", out _));
         Assert.False(resetPassword.GetProperty("post").TryGetProperty("security", out _));
+        Assert.True(users.GetProperty("get").TryGetProperty("security", out _));
+        Assert.True(userOptions.GetProperty("get").TryGetProperty("security", out _));
+        Assert.True(updateUser.GetProperty("put").TryGetProperty("security", out _));
     }
 
     [Fact]

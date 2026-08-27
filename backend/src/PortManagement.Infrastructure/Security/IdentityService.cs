@@ -268,81 +268,6 @@ internal sealed class IdentityService(
         return Result.Success(await ToResponseAsync(user));
     }
 
-    public async Task<Result<AuthenticatedUserResponse>> CreateUserAsync(
-        CreateUserCommand command,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(command.DisplayName) ||
-            command.DisplayName.Trim().Length > 160 ||
-            string.IsNullOrWhiteSpace(command.Email) ||
-            command.Email.Length > 320 ||
-            string.IsNullOrEmpty(command.Password) ||
-            command.Password.Length > 256)
-        {
-            return Result.Failure<AuthenticatedUserResponse>(new ApplicationError(
-                "security.invalid_user",
-                "Nome, e-mail ou senha possuem formato inválido.",
-                ApplicationErrorType.Validation));
-        }
-
-        if (!SecurityRoles.All.Contains(command.Role))
-        {
-            return Result.Failure<AuthenticatedUserResponse>(new ApplicationError(
-                "security.invalid_role",
-                "O papel informado não é reconhecido.",
-                ApplicationErrorType.Validation));
-        }
-
-        if (command.OrganizationId is Guid organizationId &&
-            !await database.Organizations.AnyAsync(
-                organization => organization.Id == organizationId,
-                cancellationToken))
-        {
-            return Result.Failure<AuthenticatedUserResponse>(new ApplicationError(
-                "security.organization_not_found",
-                "A organização informada não existe.",
-                ApplicationErrorType.Validation));
-        }
-
-        var email = command.Email.Trim();
-        if (await userManager.FindByEmailAsync(email) is not null)
-        {
-            return Result.Failure<AuthenticatedUserResponse>(new ApplicationError(
-                "security.email_already_registered",
-                "Já existe um usuário com esse e-mail.",
-                ApplicationErrorType.Conflict));
-        }
-
-        var user = new ApplicationUser
-        {
-            Id = Guid.NewGuid(),
-            UserName = email,
-            Email = email,
-            EmailConfirmed = true,
-            DisplayName = command.DisplayName.Trim(),
-            OrganizationId = command.OrganizationId,
-            CreatedAtUtc = timeProvider.GetUtcNow(),
-            IsActive = true
-        };
-
-        await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
-        var creation = await userManager.CreateAsync(user, command.Password);
-        if (!creation.Succeeded)
-        {
-            return Result.Failure<AuthenticatedUserResponse>(IdentityValidationFailure(creation));
-        }
-
-        var roleAssignment = await userManager.AddToRoleAsync(user, command.Role);
-        if (!roleAssignment.Succeeded)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return Result.Failure<AuthenticatedUserResponse>(IdentityValidationFailure(roleAssignment));
-        }
-
-        await transaction.CommitAsync(cancellationToken);
-        return Result.Success(await ToResponseAsync(user));
-    }
-
     private async Task<AuthTokenResponse> IssueSessionAsync(
         ApplicationUser user,
         string clientIp,
@@ -374,7 +299,8 @@ internal sealed class IdentityService(
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.DisplayName),
-            new(ClaimTypes.Email, user.Email ?? string.Empty)
+            new(ClaimTypes.Email, user.Email ?? string.Empty),
+            new(DataScopeClaims.SecurityStamp, user.SecurityStamp ?? string.Empty)
         };
 
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
