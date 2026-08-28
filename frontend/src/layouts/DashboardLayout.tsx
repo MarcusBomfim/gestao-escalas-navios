@@ -56,8 +56,14 @@ export function DashboardLayout() {
       <aside className="sidebar">
         <Logo />
 
+        <div className="sidebar-port">
+          <span>Porto demonstrativo</span>
+          <strong>BRSSZ</strong>
+          <small>Centro de operações</small>
+        </div>
+
         <nav className="primary-navigation" aria-label="Navegação principal">
-          <span className="navigation-label">Operação</span>
+          <span className="navigation-label">Módulos</span>
           {visibleNavigation.map((item) => (
             <NavLink
               key={item.to}
@@ -65,8 +71,8 @@ export function DashboardLayout() {
               end={item.end}
               className={({ isActive }) => isActive ? 'active' : undefined}
             >
-              <span aria-hidden="true">{item.code}</span>
-              {item.label}
+              <NavigationIcon code={item.code} />
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -86,6 +92,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="user-menu">
+            <span className="header-status"><i aria-hidden="true" /> Sistema conectado</span>
             <NotificationCenter />
             <span className="user-avatar" aria-hidden="true">
               {getInitials(user?.displayName ?? 'Usuário')}
@@ -111,12 +118,31 @@ export function DashboardLayout() {
             end={item.end}
             className={({ isActive }) => isActive ? 'active' : undefined}
           >
-            <span aria-hidden="true">{item.code}</span>
+            <NavigationIcon code={item.code} />
             {item.label}
           </NavLink>
         ))}
       </nav>
     </div>
+  )
+}
+
+function NavigationIcon({ code }: { code: string }) {
+  const paths: Record<string, React.ReactNode> = {
+    VG: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="4" rx="1" /><rect x="14" y="11" width="7" height="10" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></>,
+    NV: <><path d="M3 14h18l-3.5 5H6.5L3 14Z" /><path d="M8 11V5h7v6M15 8h3l2 3" /></>,
+    ES: <><path d="M5 4h14v16H5z" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
+    AG: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18M8 14h2M14 14h2M8 18h2" /></>,
+    US: <><circle cx="9" cy="8" r="3" /><path d="M3.5 20v-2.5A4.5 4.5 0 0 1 8 13h2a4.5 4.5 0 0 1 4.5 4.5V20M17 8h4M19 6v4" /></>,
+    CD: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
+    AU: <><path d="M4 4h16v16H4zM8 9h8M8 13h5M8 17h3" /><path d="m15 16 1.5 1.5L20 14" /></>,
+    OB: <><path d="M3 12h4l2-5 4 10 2-5h6" /><circle cx="12" cy="12" r="10" /></>,
+  }
+
+  return (
+    <svg className="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[code]}
+    </svg>
   )
 }
 

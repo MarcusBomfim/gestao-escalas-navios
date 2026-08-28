@@ -20,6 +20,7 @@ import { ObservabilityPage } from '../pages/ObservabilityPage'
 import { UsersPage } from '../pages/UsersPage'
 import { MasterDataPage } from '../pages/MasterDataPage'
 import './app.css'
+import '../styles/operations-theme.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

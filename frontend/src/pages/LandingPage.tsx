@@ -37,9 +37,17 @@ export function LandingPage() {
         </nav>
       </header>
 
+      <div className="operational-strip" aria-label="Estado do ambiente demonstrativo">
+        <span><i aria-hidden="true" /> Ambiente operacional disponível</span>
+        <span>BRSSZ</span>
+        <span>UTC−03:00</span>
+        <span>Dados simulados</span>
+      </div>
+
       <main>
         <section className="landing-hero">
           <div className="landing-copy">
+            <div className="landing-index"><span>PORT CONTROL</span><strong>01 / VISÃO GERAL</strong></div>
             <p className="eyebrow">Gestão portuária integrada</p>
             <h1>Clareza operacional para cada escala.</h1>
             <p>
@@ -60,7 +68,7 @@ export function LandingPage() {
           <aside className="operation-card" aria-label="Exemplo de evolução de uma escala">
             <div className="operation-card-header">
               <div>
-                <span>Escala demonstrativa</span>
+                <span>Painel de acompanhamento</span>
                 <strong>BRSSZ · DEMO-002</strong>
               </div>
               <span className="planned-badge">Em análise</span>
