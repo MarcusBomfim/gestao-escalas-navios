@@ -120,7 +120,8 @@ internal static class SecurityConfiguration
             options.AddPolicy(
                 AuthenticationRateLimit,
                 context => RateLimitPartition.GetFixedWindowLimiter(
-                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:" +
+                    $"{context.Request.Path.Value?.ToLowerInvariant() ?? "/"}",
                     _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = 10,

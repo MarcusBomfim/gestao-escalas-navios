@@ -48,6 +48,7 @@ jobs:
             echo "POSTGRES_PASSWORD=$postgres_password"
             echo "JWT_SIGNING_KEY=$jwt_signing_key"
             echo "DEMO_USER_PASSWORD=$demo_user_password"
+            echo "K6_USER_PASSWORD=$demo_user_password"
           } >> "$GITHUB_ENV"
 
       - name: Iniciar ambiente isolado
