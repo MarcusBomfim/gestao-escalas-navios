@@ -17,6 +17,38 @@ internal static class SecurityEndpoints
             .WithTags("Authentication");
 
         auth.MapPost(
+                "/demo",
+                async (
+                    HttpContext context,
+                    IConfiguration configuration,
+                    StartPublicDemoSessionHandler handler,
+                    JwtOptions jwtOptions,
+                    IWebHostEnvironment environment,
+                    CancellationToken cancellationToken) =>
+                {
+                    if (!configuration.GetValue("Demo:PublicViewerEnabled", false))
+                    {
+                        return Results.NotFound();
+                    }
+
+                    var result = await handler.HandleAsync(
+                        GetClientIp(context),
+                        cancellationToken);
+                    return result.ToHttpResult(session =>
+                    {
+                        WriteRefreshTokenCookie(
+                            context,
+                            session.RefreshToken,
+                            jwtOptions,
+                            environment);
+                        return Results.Ok(ToResponse(session));
+                    });
+                })
+            .RequireRateLimiting(SecurityConfiguration.AuthenticationRateLimit)
+            .WithName("StartPublicDemoSession")
+            .WithSummary("Inicia uma sessão demonstrativa somente leitura");
+
+        auth.MapPost(
                 "/login",
                 async (
                     LoginRequest request,
@@ -252,7 +284,10 @@ internal static class SecurityEndpoints
         HttpContext context,
         string refreshToken,
         JwtOptions jwtOptions,
-        IWebHostEnvironment environment) =>
+        IWebHostEnvironment environment)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        context.Response.Headers.Pragma = "no-cache";
         context.Response.Cookies.Append(
             RefreshTokenCookie,
             refreshToken,
@@ -264,6 +299,7 @@ internal static class SecurityEndpoints
                 Path = "/api/v1/auth",
                 MaxAge = TimeSpan.FromDays(jwtOptions.RefreshTokenDays)
             });
+    }
 
     private static void DeleteRefreshTokenCookie(
         HttpContext context,

@@ -56,4 +56,4 @@ Os contadores representam a instância atual e reiniciam junto com o processo. P
 
 ## Continuidade
 
-A próxima etapa recomendada é automação de entrega: pipeline de CI/CD, análise de segurança, imagem versionada e regras de qualidade para publicação.
+A automação de entrega, análise de segurança, imagens versionadas e regras de qualidade foi implementada na [Parte 14](18-ci-cd-e-seguranca.md).

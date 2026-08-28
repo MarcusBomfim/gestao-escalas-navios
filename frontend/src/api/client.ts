@@ -43,6 +43,12 @@ export async function signIn(email: string, password: string) {
   return session
 }
 
+export async function signInToPublicDemo() {
+  const session = await sessionRequest('/api/v1/auth/demo')
+  setSession(session)
+  return session
+}
+
 export function requestPasswordReset(email: string) {
   return request<{ message: string }>('/api/v1/auth/forgot-password', {
     method: 'POST',

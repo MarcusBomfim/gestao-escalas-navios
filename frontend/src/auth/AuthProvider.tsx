@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { restoreSession, signIn, signOut, subscribeToSession } from '../api/client'
+import { restoreSession, signIn, signInToPublicDemo, signOut, subscribeToSession } from '../api/client'
 import type { SecurityRole, SessionResponse } from '../api/types'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
@@ -39,6 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
   }, [])
 
+  const loginToPublicDemo = useCallback(async () => {
+    const nextSession = await signInToPublicDemo()
+    setSession(nextSession)
+  }, [])
+
   const hasAnyRole = useCallback(
     (...roles: SecurityRole[]) =>
       session?.user.roles.some((role) => roles.includes(role)) ?? false,
@@ -46,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user: session?.user ?? null, isReady, login, logout, hasAnyRole }),
-    [hasAnyRole, isReady, login, logout, session],
+    () => ({ user: session?.user ?? null, isReady, login, loginToPublicDemo, logout, hasAnyRole }),
+    [hasAnyRole, isReady, login, loginToPublicDemo, logout, session],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

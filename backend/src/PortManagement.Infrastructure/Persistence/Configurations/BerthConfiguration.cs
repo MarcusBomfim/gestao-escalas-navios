@@ -18,6 +18,7 @@ internal sealed class BerthConfiguration : IEntityTypeConfiguration<Berth>
         builder.Property(berth => berth.MaximumDraftMeters).HasPrecision(6, 2);
         builder.Property(berth => berth.SupportedVesselTypes).HasColumnType("integer[]").IsRequired();
         builder.Property(berth => berth.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(berth => berth.UpdatedAtUtc).IsConcurrencyToken();
         builder.HasIndex(berth => new { berth.TerminalId, berth.Code }).IsUnique();
         builder.HasOne(berth => berth.Terminal)
             .WithMany()

@@ -44,4 +44,18 @@ public sealed class Terminal : AuditableEntity
     public string TimeZoneId { get; private set; }
 
     public bool IsActive { get; private set; }
+
+    public void Update(
+        string code,
+        string name,
+        string timeZoneId,
+        bool isActive,
+        DateTimeOffset changedAtUtc)
+    {
+        Code = DomainRules.RequiredText(code, "Código do terminal", 30).ToUpperInvariant();
+        Name = DomainRules.RequiredText(name, "Nome do terminal", 160);
+        TimeZoneId = DomainRules.RequiredText(timeZoneId, "Fuso horário", 80);
+        IsActive = isActive;
+        MarkUpdated(changedAtUtc);
+    }
 }

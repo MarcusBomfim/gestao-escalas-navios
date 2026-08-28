@@ -33,6 +33,21 @@ public sealed class SecurityApplicationTests
     }
 
     [Fact]
+    public async Task PublicDemoHandlerStartsOnlyTheViewerSession()
+    {
+        var identity = new IdentityServiceFake();
+        var handler = new StartPublicDemoSessionHandler(identity);
+
+        var result = await handler.HandleAsync(
+            "127.0.0.1",
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(SecurityRoles.Viewer, Assert.Single(result.Value?.User.Roles ?? []));
+        Assert.Equal("127.0.0.1", identity.PublicDemoClientIp);
+    }
+
+    [Fact]
     public async Task CreateUserHandlerPreservesTheRequestedRole()
     {
         var identity = new IdentityServiceFake();
@@ -143,6 +158,16 @@ public sealed class SecurityApplicationTests
         public UpdateUserCommand? UpdateUserCommand { get; private set; }
 
         public string? ClientIp { get; private set; }
+
+        public string? PublicDemoClientIp { get; private set; }
+
+        public Task<Result<AuthTokenResponse>> StartPublicDemoSessionAsync(
+            string clientIp,
+            CancellationToken cancellationToken)
+        {
+            PublicDemoClientIp = clientIp;
+            return Task.FromResult(Result.Success(CreateTokenResponse()));
+        }
 
         public Task<Result<AuthTokenResponse>> LoginAsync(
             LoginCommand command,

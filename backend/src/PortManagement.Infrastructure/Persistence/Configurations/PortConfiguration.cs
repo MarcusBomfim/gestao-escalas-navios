@@ -15,6 +15,7 @@ internal sealed class PortConfiguration : IEntityTypeConfiguration<Port>
         builder.Property(port => port.UnLocode).HasMaxLength(5).IsFixedLength().IsRequired();
         builder.Property(port => port.CountryCode).HasMaxLength(2).IsFixedLength().IsRequired();
         builder.Property(port => port.TimeZoneId).HasMaxLength(80).IsRequired();
+        builder.Property(port => port.UpdatedAtUtc).IsConcurrencyToken();
         builder.HasIndex(port => port.UnLocode).IsUnique();
     }
 }

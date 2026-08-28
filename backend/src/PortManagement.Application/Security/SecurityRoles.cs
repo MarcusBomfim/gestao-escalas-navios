@@ -15,6 +15,7 @@ public static class SecurityRoles
 public static class AuthorizationPolicies
 {
     public const string ManageUsers = nameof(ManageUsers);
+    public const string ManageMasterData = nameof(ManageMasterData);
     public const string ManageVessels = nameof(ManageVessels);
     public const string CreatePortCalls = nameof(CreatePortCalls);
     public const string TransitionPortCalls = nameof(TransitionPortCalls);

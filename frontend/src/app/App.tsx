@@ -18,6 +18,7 @@ import { VesselsPage } from '../pages/VesselsPage'
 import { AuditPage } from '../pages/AuditPage'
 import { ObservabilityPage } from '../pages/ObservabilityPage'
 import { UsersPage } from '../pages/UsersPage'
+import { MasterDataPage } from '../pages/MasterDataPage'
 import './app.css'
 
 const queryClient = new QueryClient({
@@ -56,6 +57,7 @@ export function App() {
                 </Route>
                 <Route element={<RequireRole roles={['Administrator']} />}>
                   <Route path="/usuarios" element={<UsersPage />} />
+                  <Route path="/cadastros" element={<MasterDataPage />} />
                   <Route path="/auditoria" element={<AuditPage />} />
                   <Route path="/observabilidade" element={<ObservabilityPage />} />
                 </Route>

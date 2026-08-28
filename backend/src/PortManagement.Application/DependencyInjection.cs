@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PortManagement.Application.Administration;
 using PortManagement.Application.Auditing;
 using PortManagement.Application.ControlTower;
 using PortManagement.Application.Notifications;
@@ -16,6 +17,16 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<GetAuditLogHandler>();
+        services.AddScoped<ListOrganizationsHandler>();
+        services.AddScoped<CreateOrganizationHandler>();
+        services.AddScoped<UpdateOrganizationHandler>();
+        services.AddScoped<GetMasterPortStructureHandler>();
+        services.AddScoped<CreatePortHandler>();
+        services.AddScoped<UpdatePortHandler>();
+        services.AddScoped<CreateTerminalHandler>();
+        services.AddScoped<UpdateTerminalHandler>();
+        services.AddScoped<CreateBerthHandler>();
+        services.AddScoped<UpdateBerthHandler>();
         services.AddScoped<ExportAuditLogHandler>();
         services.AddScoped<RegisterVesselHandler>();
         services.AddScoped<UpdateVesselHandler>();
@@ -41,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<MarkNotificationReadHandler>();
         services.AddScoped<MarkAllNotificationsReadHandler>();
         services.AddScoped<GetPortStructureHandler>();
+        services.AddScoped<StartPublicDemoSessionHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshSessionHandler>();
         services.AddScoped<RevokeSessionHandler>();

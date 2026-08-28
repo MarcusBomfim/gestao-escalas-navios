@@ -87,6 +87,9 @@ internal static class SecurityConfiguration
                 AuthorizationPolicies.ManageUsers,
                 policy => policy.RequireRole(SecurityRoles.Administrator))
             .AddPolicy(
+                AuthorizationPolicies.ManageMasterData,
+                policy => policy.RequireRole(SecurityRoles.Administrator))
+            .AddPolicy(
                 AuthorizationPolicies.ManageVessels,
                 policy => policy.RequireRole(SecurityRoles.Administrator, SecurityRoles.Planner))
             .AddPolicy(

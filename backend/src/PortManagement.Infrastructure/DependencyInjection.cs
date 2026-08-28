@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PortManagement.Application.Administration;
 using PortManagement.Application.Auditing;
 using PortManagement.Application.Common;
 using PortManagement.Application.ControlTower;
@@ -74,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<IControlTowerRepository, ControlTowerRepository>();
         services.AddScoped<INotificationReceiptRepository, NotificationReceiptRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IMasterDataRepository, MasterDataRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserAdministrationService, UserAdministrationService>();
         services.AddScoped<IPasswordResetEmailSender, SmtpPasswordResetEmailSender>();

@@ -2,6 +2,14 @@ using PortManagement.Application.Common;
 
 namespace PortManagement.Application.Security;
 
+public sealed class StartPublicDemoSessionHandler(IIdentityService identityService)
+{
+    public Task<Result<AuthTokenResponse>> HandleAsync(
+        string clientIp,
+        CancellationToken cancellationToken = default) =>
+        identityService.StartPublicDemoSessionAsync(clientIp, cancellationToken);
+}
+
 public sealed class LoginHandler(IIdentityService identityService)
 {
     public Task<Result<AuthTokenResponse>> HandleAsync(

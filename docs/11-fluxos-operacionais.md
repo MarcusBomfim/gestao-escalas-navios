@@ -50,4 +50,4 @@ Cancelamentos exigem justificativa tanto no formulário quanto no domínio. Cada
 
 ## Escopo original desta etapa
 
-O planejamento de terminal, berço e janelas de atracação foi implementado posteriormente na [Parte 8](12-planejamento-atracacao.md). Operações de carga e notificações permanecem para etapas futuras.
+O planejamento de terminal, berço e janelas de atracação foi implementado na [Parte 8](12-planejamento-atracacao.md), as operações de carga na [Parte 9](13-execucao-operacional.md) e as notificações na [Parte 11](15-notificacoes-em-tempo-real.md).

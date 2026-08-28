@@ -38,6 +38,7 @@ services:
       PasswordRecovery__SmtpHost: mailpit
       PasswordRecovery__SmtpPort: 1025
       PasswordRecovery__PublicWebUrl: ${WEB_ORIGIN:-http://localhost:5173}
+      Demo__PublicViewerEnabled: ${PUBLIC_DEMO_ENABLED:-true}
       DataProtection__KeysPath: /app/data-protection-keys
     ports:
       - "${API_PORT:-8080}:8080"

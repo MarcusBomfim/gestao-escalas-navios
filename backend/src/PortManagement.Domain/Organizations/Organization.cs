@@ -20,7 +20,7 @@ public sealed class Organization : AuditableEntity
     {
         Name = DomainRules.RequiredText(name, "Nome da organização", 180);
         RegistrationNumber = DomainRules.RequiredText(registrationNumber, "Registro da organização", 40);
-        Type = type;
+        Type = ValidateType(type);
         IsActive = true;
     }
 
@@ -31,4 +31,31 @@ public sealed class Organization : AuditableEntity
     public OrganizationType Type { get; private set; }
 
     public bool IsActive { get; private set; }
+
+    public void Update(
+        string name,
+        string registrationNumber,
+        OrganizationType type,
+        bool isActive,
+        DateTimeOffset changedAtUtc)
+    {
+        Name = DomainRules.RequiredText(name, "Nome da organização", 180);
+        RegistrationNumber = DomainRules.RequiredText(
+            registrationNumber,
+            "Registro da organização",
+            40);
+        Type = ValidateType(type);
+        IsActive = isActive;
+        MarkUpdated(changedAtUtc);
+    }
+
+    private static OrganizationType ValidateType(OrganizationType type)
+    {
+        if (!Enum.IsDefined(type))
+        {
+            throw new DomainException("O tipo da organização não é válido.");
+        }
+
+        return type;
+    }
 }

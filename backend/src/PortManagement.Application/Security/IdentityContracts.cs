@@ -74,6 +74,10 @@ public sealed record AuthTokenResponse(
 
 public interface IIdentityService
 {
+    Task<Result<AuthTokenResponse>> StartPublicDemoSessionAsync(
+        string clientIp,
+        CancellationToken cancellationToken);
+
     Task<Result<AuthTokenResponse>> LoginAsync(
         LoginCommand command,
         string clientIp,

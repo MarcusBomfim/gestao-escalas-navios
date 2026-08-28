@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using PortManagement.Api.Auditing;
 using PortManagement.Api.Contracts;
+using PortManagement.Api.Endpoints.Administration;
 using PortManagement.Api.Endpoints.Auditing;
 using PortManagement.Api.Endpoints.ControlTower;
 using PortManagement.Api.Endpoints.Notifications;
@@ -173,7 +174,8 @@ if (args.Contains("--seed-demo", StringComparer.Ordinal))
 app.UseMiddleware<CorrelationAndMetricsMiddleware>();
 app.UseExceptionHandler();
 app.UseRequestTimeouts();
-if (!app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment()
+    && builder.Configuration.GetValue("Security:EnforceHttps", false))
 {
     app.UseHsts();
     app.UseHttpsRedirection();
@@ -227,6 +229,7 @@ app.MapHub<ControlTowerHub>("/hubs/control-tower")
     .DisableRequestTimeout();
 app.MapReferenceDataEndpoints();
 app.MapSecurityEndpoints();
+app.MapMasterDataEndpoints();
 
 app.Run();
 

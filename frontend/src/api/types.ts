@@ -47,6 +47,121 @@ export interface UpdateUserInput {
   expectedVersion: string
 }
 
+export type OrganizationType =
+  | 'PortAuthority'
+  | 'TerminalOperator'
+  | 'PortOperator'
+  | 'ShippingLine'
+  | 'ShippingAgency'
+
+export type ManagedBerthStatus = 'Available' | 'Unavailable' | 'Maintenance'
+
+export type ManagedVesselType =
+  | 'ContainerShip'
+  | 'BulkCarrier'
+  | 'Tanker'
+  | 'GeneralCargo'
+  | 'RoRo'
+  | 'Passenger'
+  | 'Offshore'
+  | 'Other'
+
+export interface ManagedOrganization {
+  id: string
+  name: string
+  registrationNumber: string
+  type: OrganizationType
+  isActive: boolean
+  createdAtUtc: string
+  updatedAtUtc: string
+}
+
+export interface ManagedBerth {
+  id: string
+  terminalId: string
+  code: string
+  name: string
+  usefulLengthMeters: number
+  maximumBeamMeters: number
+  maximumDraftMeters: number
+  supportedVesselTypes: ManagedVesselType[]
+  status: ManagedBerthStatus
+  createdAtUtc: string
+  updatedAtUtc: string
+}
+
+export interface ManagedTerminal {
+  id: string
+  portId: string
+  code: string
+  name: string
+  timeZoneId: string
+  isActive: boolean
+  createdAtUtc: string
+  updatedAtUtc: string
+  berths: ManagedBerth[]
+}
+
+export interface ManagedPort {
+  id: string
+  name: string
+  unLocode: string
+  countryCode: string
+  timeZoneId: string
+  isActive: boolean
+  createdAtUtc: string
+  updatedAtUtc: string
+  terminals: ManagedTerminal[]
+}
+
+export interface OrganizationInput {
+  name: string
+  registrationNumber: string
+  type: OrganizationType
+}
+
+export interface OrganizationUpdateInput extends OrganizationInput {
+  isActive: boolean
+  expectedUpdatedAtUtc: string
+}
+
+export interface PortInput {
+  name: string
+  unLocode: string
+  countryCode: string
+  timeZoneId: string
+}
+
+export interface PortUpdateInput extends PortInput {
+  isActive: boolean
+  expectedUpdatedAtUtc: string
+}
+
+export interface TerminalInput {
+  code: string
+  name: string
+  timeZoneId: string
+}
+
+export interface TerminalUpdateInput extends TerminalInput {
+  isActive: boolean
+  expectedUpdatedAtUtc: string
+}
+
+export interface BerthInput {
+  code: string
+  name: string
+  usefulLengthMeters: number
+  maximumBeamMeters: number
+  maximumDraftMeters: number
+  supportedVesselTypes: ManagedVesselType[]
+}
+
+export interface BerthUpdateInput extends BerthInput {
+  status: ManagedBerthStatus
+  expectedUpdatedAtUtc: string
+}
+
 export interface SessionResponse {
   accessToken: string
   accessTokenExpiresAtUtc: string

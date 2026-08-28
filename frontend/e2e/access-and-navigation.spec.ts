@@ -26,6 +26,7 @@ test('preserva o destino protegido, restaura a sessão e realiza logout', async 
   await expect(navigation.getByRole('link', { name: 'Auditoria' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Saúde' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Usuários' })).toHaveCount(0)
+  await expect(navigation.getByRole('link', { name: 'Cadastros' })).toHaveCount(0)
 
   await page.reload()
   await expect(page).toHaveURL(/\/navios$/)
@@ -62,7 +63,7 @@ test('solicita recuperação sem revelar se o e-mail está cadastrado', async ({
 
 test('mantém o perfil visitante em modo somente leitura', async ({ page }) => {
   await page.goto('/login')
-  await signInAs(page, 'Visitante')
+  await page.getByRole('button', { name: 'Entrar como visitante' }).click()
 
   await expect(page).toHaveURL(/\/painel$/)
   await expect(page.getByText('Visitante Demo')).toBeVisible()
@@ -79,6 +80,7 @@ test('mantém o perfil visitante em modo somente leitura', async ({ page }) => {
   await expect(navigation.getByRole('link', { name: 'Auditoria' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Saúde' })).toHaveCount(0)
   await expect(navigation.getByRole('link', { name: 'Usuários' })).toHaveCount(0)
+  await expect(navigation.getByRole('link', { name: 'Cadastros' })).toHaveCount(0)
 })
 
 test('permite ao administrador consultar e iniciar o cadastro de usuários', async ({ page }) => {
@@ -96,4 +98,13 @@ test('permite ao administrador consultar e iniciar o cadastro de usuários', asy
   await expect(page.getByText('Cadastrar usuário', { exact: true }).last()).toBeVisible()
   await expect(page.getByLabel('Senha inicial')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Salvar alterações' })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Cancelar' }).click()
+  await navigation.getByRole('link', { name: 'Cadastros' }).click()
+
+  await expect(page).toHaveURL(/\/cadastros$/)
+  await expect(page.getByRole('heading', { name: 'Cadastros mestres' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Cadastrar organização' })).toBeVisible()
+  await page.getByRole('tab', { name: 'Portos, terminais e berços' }).click()
+  await expect(page.getByRole('button', { name: 'Cadastrar porto' })).toBeVisible()
 })

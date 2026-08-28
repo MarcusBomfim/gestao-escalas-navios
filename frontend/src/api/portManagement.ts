@@ -27,6 +27,19 @@ import type {
   UpdateUserInput,
   SecurityRole,
   AuthenticatedUser,
+  ManagedOrganization,
+  ManagedBerth,
+  ManagedPort,
+  ManagedTerminal,
+  OrganizationInput,
+  OrganizationUpdateInput,
+  PortInput,
+  PortUpdateInput,
+  TerminalInput,
+  TerminalUpdateInput,
+  BerthInput,
+  BerthUpdateInput,
+  OrganizationType,
 } from './types'
 
 export interface ListOptions {
@@ -51,6 +64,11 @@ export interface ListAuditOptions {
 
 export interface ListUsersOptions extends ListOptions {
   role?: SecurityRole
+  isActive?: boolean
+}
+
+export interface ListOrganizationsOptions extends ListOptions {
+  type?: OrganizationType
   isActive?: boolean
 }
 
@@ -87,6 +105,75 @@ export function createUser(input: CreateUserInput) {
 export function updateUser(id: string, input: UpdateUserInput) {
   return request<ManagedUser>(
     `/api/v1/users/${encodeURIComponent(id)}`,
+    jsonRequest('PUT', input),
+  )
+}
+
+export function listManagedOrganizations(options: ListOrganizationsOptions = {}) {
+  const query = createSearchParams(options)
+  if (options.type) query.set('type', options.type)
+  if (options.isActive !== undefined) query.set('isActive', String(options.isActive))
+  return request<PagedResponse<ManagedOrganization>>(
+    `/api/v1/admin/master-data/organizations?${query}`,
+  )
+}
+
+export function createManagedOrganization(input: OrganizationInput) {
+  return request<ManagedOrganization>(
+    '/api/v1/admin/master-data/organizations',
+    jsonRequest('POST', input),
+  )
+}
+
+export function updateManagedOrganization(id: string, input: OrganizationUpdateInput) {
+  return request<ManagedOrganization>(
+    `/api/v1/admin/master-data/organizations/${encodeURIComponent(id)}`,
+    jsonRequest('PUT', input),
+  )
+}
+
+export function listManagedPortStructure() {
+  return request<ManagedPort[]>('/api/v1/admin/master-data/ports')
+}
+
+export function createManagedPort(input: PortInput) {
+  return request<ManagedPort>(
+    '/api/v1/admin/master-data/ports',
+    jsonRequest('POST', input),
+  )
+}
+
+export function updateManagedPort(id: string, input: PortUpdateInput) {
+  return request<ManagedPort>(
+    `/api/v1/admin/master-data/ports/${encodeURIComponent(id)}`,
+    jsonRequest('PUT', input),
+  )
+}
+
+export function createManagedTerminal(portId: string, input: TerminalInput) {
+  return request<ManagedTerminal>(
+    `/api/v1/admin/master-data/ports/${encodeURIComponent(portId)}/terminals`,
+    jsonRequest('POST', input),
+  )
+}
+
+export function updateManagedTerminal(id: string, input: TerminalUpdateInput) {
+  return request<ManagedTerminal>(
+    `/api/v1/admin/master-data/terminals/${encodeURIComponent(id)}`,
+    jsonRequest('PUT', input),
+  )
+}
+
+export function createManagedBerth(terminalId: string, input: BerthInput) {
+  return request<ManagedBerth>(
+    `/api/v1/admin/master-data/terminals/${encodeURIComponent(terminalId)}/berths`,
+    jsonRequest('POST', input),
+  )
+}
+
+export function updateManagedBerth(id: string, input: BerthUpdateInput) {
+  return request<ManagedBerth>(
+    `/api/v1/admin/master-data/berths/${encodeURIComponent(id)}`,
     jsonRequest('PUT', input),
   )
 }

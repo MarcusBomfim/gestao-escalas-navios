@@ -12,7 +12,7 @@ const demoUsers = [
 ]
 
 export function LoginPage() {
-  const { user, isReady, login } = useAuth()
+  const { user, isReady, login, loginToPublicDemo } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('planner.demo@portmanagement.local')
@@ -37,6 +37,22 @@ export function LoginPage() {
       setError(caughtError instanceof ApiError
         ? caughtError.message
         : 'Não foi possível entrar. Verifique se a API está em execução.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handlePublicDemo = async () => {
+    setError(null)
+    setIsSubmitting(true)
+
+    try {
+      await loginToPublicDemo()
+      navigate(destination, { replace: true })
+    } catch (caughtError) {
+      setError(caughtError instanceof ApiError
+        ? caughtError.message
+        : 'O acesso demonstrativo não está disponível neste momento.')
     } finally {
       setIsSubmitting(false)
     }
@@ -69,6 +85,18 @@ export function LoginPage() {
             <h2>Entre na sua conta</h2>
             <p>As contas abaixo existem apenas para demonstração.</p>
           </div>
+
+          <button
+            className="button primary public-demo-button"
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => void handlePublicDemo()}
+          >
+            {isSubmitting ? 'Preparando demonstração…' : 'Entrar como visitante'}
+          </button>
+          <p className="public-demo-help">Acesso imediato e somente leitura, sem senha.</p>
+
+          <div className="login-divider"><span>ou use uma conta técnica</span></div>
 
           <div className="demo-user-selector" aria-label="Selecionar conta demonstrativa">
             {demoUsers.map((demoUser) => (

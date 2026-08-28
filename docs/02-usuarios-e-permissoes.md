@@ -2,7 +2,7 @@
 
 ## Modelo de acesso
 
-O acesso será baseado em três elementos:
+O acesso é baseado em três elementos:
 
 1. **Identidade:** quem realizou a ação.
 2. **Organização:** em nome de qual empresa ou instituição o usuário atua.
@@ -19,7 +19,7 @@ As decisões de autorização são feitas no back-end; esconder um botão no fro
 | `Planner` | Planeja o escopo da própria organização; agências e armadores podem originar escalas. |
 | `Administrator` | Escopo global, permissões operacionais e criação controlada de usuários. |
 
-Esses quatro papéis formam a primeira camada executável de autorização. As personas abaixo detalham o modelo de domínio que será refinado com escopo organizacional e permissões mais granulares.
+Esses quatro papéis formam a camada executável de autorização. As personas abaixo detalham o modelo de domínio, complementado pelo escopo organizacional e pelas permissões implementadas nas etapas posteriores.
 
 ## Personas de domínio planejadas
 

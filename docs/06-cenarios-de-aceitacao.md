@@ -1,6 +1,6 @@
 # Cenários de aceitação
 
-Os cenários abaixo descrevem comportamentos observáveis. Eles serão transformados gradualmente em testes automatizados nas próximas partes.
+Os cenários abaixo descrevem comportamentos observáveis e orientam os testes automatizados unitários, de integração e de navegador entregues no projeto.
 
 ## Cadastro de navio
 
@@ -156,4 +156,3 @@ Quando a linha do tempo é exibida
 Então o sistema converte o horário para o fuso escolhido
 E informa visualmente qual fuso está sendo utilizado
 ```
-

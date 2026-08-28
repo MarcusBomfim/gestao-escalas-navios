@@ -39,7 +39,32 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.True(paths.TryGetProperty("/api/v1/users", out var users));
         Assert.True(paths.TryGetProperty("/api/v1/users/options", out var userOptions));
         Assert.True(paths.TryGetProperty("/api/v1/users/{id}", out var updateUser));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/organizations",
+            out var organizations));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/organizations/{id}",
+            out var updateOrganization));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/ports",
+            out var ports));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/ports/{id}",
+            out var updatePort));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/ports/{portId}/terminals",
+            out var createTerminal));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/terminals/{id}",
+            out var updateTerminal));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/terminals/{terminalId}/berths",
+            out var createBerth));
+        Assert.True(paths.TryGetProperty(
+            "/api/v1/admin/master-data/berths/{id}",
+            out var updateBerth));
         Assert.True(paths.TryGetProperty("/api/v1/auth/login", out var login));
+        Assert.True(paths.TryGetProperty("/api/v1/auth/demo", out var publicDemo));
         Assert.True(paths.TryGetProperty(
             "/api/v1/auth/forgot-password",
             out var forgotPassword));
@@ -61,11 +86,22 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
         Assert.True(protectedOperation.GetProperty("responses").TryGetProperty("401", out _));
         Assert.True(protectedOperation.GetProperty("responses").TryGetProperty("403", out _));
         Assert.False(login.GetProperty("post").TryGetProperty("security", out _));
+        Assert.False(publicDemo.GetProperty("post").TryGetProperty("security", out _));
         Assert.False(forgotPassword.GetProperty("post").TryGetProperty("security", out _));
         Assert.False(resetPassword.GetProperty("post").TryGetProperty("security", out _));
         Assert.True(users.GetProperty("get").TryGetProperty("security", out _));
         Assert.True(userOptions.GetProperty("get").TryGetProperty("security", out _));
         Assert.True(updateUser.GetProperty("put").TryGetProperty("security", out _));
+        Assert.True(organizations.GetProperty("get").TryGetProperty("security", out _));
+        Assert.True(organizations.GetProperty("post").TryGetProperty("security", out _));
+        Assert.True(updateOrganization.GetProperty("put").TryGetProperty("security", out _));
+        Assert.True(ports.GetProperty("get").TryGetProperty("security", out _));
+        Assert.True(ports.GetProperty("post").TryGetProperty("security", out _));
+        Assert.True(updatePort.GetProperty("put").TryGetProperty("security", out _));
+        Assert.True(createTerminal.GetProperty("post").TryGetProperty("security", out _));
+        Assert.True(updateTerminal.GetProperty("put").TryGetProperty("security", out _));
+        Assert.True(createBerth.GetProperty("post").TryGetProperty("security", out _));
+        Assert.True(updateBerth.GetProperty("put").TryGetProperty("security", out _));
     }
 
     [Fact]
@@ -78,6 +114,18 @@ public sealed class OpenApiContractTests(OpenApiContractApplicationFactory facto
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Port Management API", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PublicDemoEndpointIsHiddenWhenTheFeatureIsDisabled()
+    {
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsync(
+            "/api/v1/auth/demo",
+            content: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

@@ -14,6 +14,7 @@ internal sealed class TerminalConfiguration : IEntityTypeConfiguration<Terminal>
         builder.Property(terminal => terminal.Code).HasMaxLength(30).IsRequired();
         builder.Property(terminal => terminal.Name).HasMaxLength(160).IsRequired();
         builder.Property(terminal => terminal.TimeZoneId).HasMaxLength(80).IsRequired();
+        builder.Property(terminal => terminal.UpdatedAtUtc).IsConcurrencyToken();
         builder.HasIndex(terminal => new { terminal.PortId, terminal.Code }).IsUnique();
         builder.HasOne(terminal => terminal.Port)
             .WithMany()

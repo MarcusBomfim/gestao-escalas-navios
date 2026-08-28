@@ -72,7 +72,7 @@
 
 ### Desempenho
 
-- **RNF-013:** consultas paginadas comuns devem responder em até 500 ms no percentil 95, sob a carga de referência que será documentada.
+- **RNF-013:** consultas paginadas comuns devem responder em até 500 ms no percentil 95, sob a carga de referência documentada na Parte 16.
 - **RNF-014:** operações demoradas devem ser assíncronas e não bloquear requisições web.
 - **RNF-015:** índices e planos das consultas críticas devem ser avaliados com dados representativos.
 
@@ -124,4 +124,3 @@
 - Relatórios avançados.
 - Observabilidade completa.
 - Exportações e integrações externas.
-

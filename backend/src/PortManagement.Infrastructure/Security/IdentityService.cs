@@ -19,6 +19,8 @@ internal sealed class IdentityService(
     IPasswordResetEmailSender passwordResetEmailSender,
     TimeProvider timeProvider) : IIdentityService
 {
+    private const string PublicDemoEmail = "viewer.demo@portmanagement.local";
+
     private static readonly ApplicationError InvalidCredentials = new(
         "security.invalid_credentials",
         "E-mail ou senha inválidos.",
@@ -33,6 +35,32 @@ internal sealed class IdentityService(
         "security.invalid_password_reset",
         "O link de redefinição é inválido ou expirou.",
         ApplicationErrorType.Validation);
+
+    public async Task<Result<AuthTokenResponse>> StartPublicDemoSessionAsync(
+        string clientIp,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var user = await userManager.FindByEmailAsync(PublicDemoEmail);
+        var roles = user is null ? [] : await userManager.GetRolesAsync(user);
+        var claims = user is null ? [] : await userManager.GetClaimsAsync(user);
+        if (user is null
+            || !user.IsActive
+            || user.OrganizationId is not null
+            || roles.Count != 1
+            || !string.Equals(roles[0], SecurityRoles.Viewer, StringComparison.Ordinal)
+            || !claims.Any(claim =>
+                claim.Type == DataScopeClaims.Scope
+                && claim.Value == DataScopeClaims.Global))
+        {
+            return Result.Failure<AuthTokenResponse>(new ApplicationError(
+                "security.public_demo_unavailable",
+                "O acesso demonstrativo não está disponível neste ambiente.",
+                ApplicationErrorType.NotFound));
+        }
+
+        return Result.Success(await IssueSessionAsync(user, clientIp, cancellationToken));
+    }
 
     public async Task<Result<AuthTokenResponse>> LoginAsync(
         LoginCommand command,

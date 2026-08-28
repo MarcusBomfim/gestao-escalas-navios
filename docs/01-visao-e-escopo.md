@@ -58,7 +58,7 @@ O sistema deverá manter uma visão única e auditável da passagem de um navio 
 - A demonstração terá como fuso padrão `America/Sao_Paulo`.
 - Registros públicos serão sintéticos e claramente identificados como demonstração.
 - Integrações externas serão acessadas por adaptadores e poderão ser substituídas por simuladores.
-- A primeira arquitetura será um monólito modular com fronteiras bem definidas.
+- A arquitetura é um monólito modular com fronteiras bem definidas.
 
 ## Critérios de sucesso
 
@@ -74,4 +74,3 @@ O sistema deverá manter uma visão única e auditável da passagem de um navio 
 - [DCSA Port Call Standard 2.0 — Purpose and Scope](https://reference.dcsa.org/content/standards/releases/port-call/v2-0-0/port-call-v2-0-0-purpose-and-scope)
 - [IMO Integrated Identification Number Scheme](https://wwwcdn.imo.org/localresources/en/OurWork/IIIS/Documents/A%2034-Res.1215%20-%20INTEGRATED%20IMO%20IDENTIFICATION%20NUMBER%20SCHEME%20%28Secretariat%29.pdf)
 - [Porto Sem Papel — manual de integração](https://www.gov.br/portos-e-aeroportos/pt-br/assuntos/transporte-aquaviario/porto-sem-papel/arquivos-para-download/manual-servicos-web-psp.pdf)
-

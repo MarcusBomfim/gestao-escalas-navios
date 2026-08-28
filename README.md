@@ -8,7 +8,7 @@ Plataforma para planejar, acompanhar e auditar escalas e operações de navios e
 
 ## Situação do projeto
 
-O projeto está na **Parte 21 — gestão administrativa de usuários concluída**. Administradores agora contam com uma interface para pesquisar, filtrar, cadastrar e atualizar usuários, perfis, organizações e situações de acesso. O backend impede autobloqueio e remoção do último administrador, protege edições concorrentes e invalida imediatamente sessões após mudanças de permissão.
+O projeto está **concluído na versão 1.0.0 — Parte 25**. A plataforma reúne identidade, isolamento organizacional, cadastros mestres, planejamento, execução, torre de controle, notificações, auditoria, observabilidade e publicação automatizada. Para apresentação de portfólio, visitantes podem entrar com um clique em uma conta global estritamente somente leitura, sem receber senhas ou permissões administrativas.
 
 ## Tecnologias
 
@@ -54,7 +54,9 @@ gestao-escalas-navios/
 ├── tests/
 │   └── performance/
 ├── docs/
-└── compose.yaml
+├── CHANGELOG.md
+├── compose.yaml
+└── compose.production.yaml
 ```
 
 As dependências seguem para dentro: `Api → Application → Domain`. A infraestrutura implementa persistência e integrações sem transferir detalhes tecnológicos para o domínio.
@@ -90,6 +92,7 @@ dotnet ef database update `
 $env:ConnectionStrings__Database = $env:PORT_MANAGEMENT_DB
 $env:Jwt__SigningKey = "SUA_CHAVE_LOCAL_COM_PELO_MENOS_32_BYTES"
 $env:Demo__UserPassword = "SUA_SENHA_DEMO"
+$env:Demo__PublicViewerEnabled = "true"
 ```
 
 Depois, execute a API:
@@ -133,7 +136,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Antes de iniciar, substitua no `.env` os valores de `POSTGRES_PASSWORD`, `JWT_SIGNING_KEY` e `DEMO_USER_PASSWORD`. O arquivo não é versionado. A chave JWT precisa ter pelo menos 32 bytes e a senha demonstrativa deve cumprir a política exibida abaixo.
+Antes de iniciar, substitua no `.env` os valores de `POSTGRES_PASSWORD`, `JWT_SIGNING_KEY` e `DEMO_USER_PASSWORD`. O arquivo não é versionado. A chave JWT precisa ter pelo menos 32 bytes e a senha demonstrativa deve cumprir a política exibida abaixo. `PUBLIC_DEMO_ENABLED=true` libera somente o acesso público do perfil `Viewer`.
 
 Você pode gerar uma chave JWT local no PowerShell:
 
@@ -155,6 +158,21 @@ docker compose logs seed-demo
 docker compose logs api
 ```
 
+Na tela de login, **Entrar como visitante** abre a demonstração sem senha. Os demais perfis continuam exigindo a senha técnica definida em `DEMO_USER_PASSWORD`.
+
+## Publicação em produção
+
+A publicação usa imagens versionadas do GHCR, PostgreSQL privado, migrations automáticas e portas vinculadas somente ao host local para uso atrás de um proxy HTTPS:
+
+```powershell
+Copy-Item .env.production.example .env.production
+notepad .env.production
+docker compose --env-file .env.production -f compose.production.yaml config --quiet
+docker compose --env-file .env.production -f compose.production.yaml up -d
+```
+
+Configure a variável `PUBLIC_API_URL` do repositório antes de criar uma tag, pois a URL é incorporada ao frontend durante o build. Consulte [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md) para TLS, domínios, atualização e retorno de versão.
+
 ## Validação
 
 ```powershell
@@ -163,7 +181,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 100 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, recuperação de senha, gestão de usuários, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 114 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, acesso público somente leitura, recuperação de senha, gestão de usuários, cadastros mestres, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -174,7 +192,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os seis testes Playwright validam os fluxos de navegador, incluindo recuperação sem enumeração de contas, gestão administrativa, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 106 testes automatizados:
+Com a aplicação completa em execução, os seis testes Playwright validam os fluxos de navegador, incluindo acesso público somente leitura, recuperação sem enumeração de contas, gestão administrativa de usuários e cadastros mestres, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 120 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
@@ -195,14 +213,14 @@ Use `-Profile load` somente em ambiente próprio e controlado. O resultado JSON 
 
 Os workflows em `.github/workflows` executam build, testes, lint, auditoria de dependências, CodeQL, construção das imagens e smoke de desempenho em cada alteração da `main`. A carga controlada roda sob demanda e semanalmente. O Dependabot acompanha atualizações de NuGet, npm, Docker e GitHub Actions.
 
-Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) antes de proteger a branch ou criar a primeira versão.
+Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. A versão final planejada é `1.0.0`; consulte o [changelog](CHANGELOG.md) e o [checklist de release](docs/29-finalizacao-e-release.md).
 
 ## Interface Web
 
 Rotas disponíveis:
 
 - `/` — apresentação pública do projeto.
-- `/login` — seleção e autenticação de uma conta demonstrativa.
+- `/login` — acesso público somente leitura ou autenticação de uma conta técnica.
 - `/recuperar-senha` — solicitação de um link temporário de recuperação.
 - `/redefinir-senha` — definição de uma nova senha a partir do link recebido.
 - `/painel` — torre de controle com mapa operacional simulado, indicadores, alertas priorizados e escalas monitoradas.
@@ -214,6 +232,7 @@ Rotas disponíveis:
 - `/escalas/{publicCode}` — detalhes, planejamento, marcos realizados, cargas, indicadores e histórico.
 - `/agenda` — agenda diária de janelas solicitadas e confirmadas por berço.
 - `/usuarios` — gestão de contas, perfis, organizações e acessos para `Administrator`.
+- `/cadastros` — gestão de organizações, portos, terminais e berços para `Administrator`.
 - `/auditoria` — evidências, filtros e relatórios exclusivos do `Administrator`.
 - `/observabilidade` — métricas e prontidão da instância para o `Administrator`.
 
@@ -257,6 +276,7 @@ Principais rotas:
 - `GET /health/live`
 - `GET /health/ready`
 - `POST /api/v1/auth/login`
+- `POST /api/v1/auth/demo` — cria somente a sessão pública `Viewer` quando habilitada.
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `POST /api/v1/auth/forgot-password`
@@ -266,17 +286,27 @@ Principais rotas:
 - `GET /api/v1/users/options`
 - `POST /api/v1/users`
 - `PUT /api/v1/users/{id}`
+- `GET` e `POST /api/v1/admin/master-data/organizations`
+- `PUT /api/v1/admin/master-data/organizations/{id}`
+- `GET` e `POST /api/v1/admin/master-data/ports`
+- `PUT /api/v1/admin/master-data/ports/{id}`
+- `POST /api/v1/admin/master-data/ports/{portId}/terminals`
+- `PUT /api/v1/admin/master-data/terminals/{id}`
+- `POST /api/v1/admin/master-data/terminals/{terminalId}/berths`
+- `PUT /api/v1/admin/master-data/berths/{id}`
 
-Todas as rotas de negócio exigem autenticação. O cadastro de usuários, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Além do papel, escalas, janelas, eventos, cargas, alertas e posições aplicam o escopo organizacional. Recursos fora desse escopo se comportam como não encontrados. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
+Todas as rotas de negócio exigem autenticação. O cadastro de usuários, os cadastros mestres, a auditoria e o diagnóstico detalhado exigem `Administrator`; navios, escalas e planejamento aceitam `Administrator` ou `Planner`; a execução operacional aceita `Administrator` ou `Operator`. Além do papel, escalas, janelas, eventos, cargas, alertas e posições aplicam o escopo organizacional. Recursos fora desse escopo se comportam como não encontrados. Os health checks públicos retornam somente estado e duração, sem detalhes internos. O papel `Viewer` permanece somente leitura.
 
 Após o login, envie o `accessToken` no cabeçalho `Authorization: Bearer {token}`. O refresh token não aparece no JSON: ele é mantido em cookie `HttpOnly`, rotacionado a cada renovação e armazenado no PostgreSQL somente como hash SHA-256.
 
-O seed cria quatro contas fictícias, todas com a senha definida por você em `DEMO_USER_PASSWORD`:
+O seed cria quatro contas técnicas fictícias, todas com a senha definida por você em `DEMO_USER_PASSWORD`:
 
 - `admin.demo@portmanagement.local`
 - `planner.demo@portmanagement.local`
 - `operator.demo@portmanagement.local`
 - `viewer.demo@portmanagement.local`
+
+O botão público não revela nem utiliza essa senha no navegador. A API só cria a sessão se a conta `viewer.demo` continuar ativa, sem organização, com escopo global e exclusivamente com o papel `Viewer`.
 
 Exemplo de login no PowerShell:
 
@@ -317,6 +347,10 @@ Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simul
 Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md) para claims, filtros, criação de escalas, SignalR e negação por padrão.
 Consulte [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md) para tokens temporários, envio SMTP, proteção contra enumeração e revogação de sessões.
 Consulte [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md) para perfis, organizações, bloqueio imediato, concorrência e proteção do último administrador.
+Consulte [Gestão de cadastros mestres — Parte 22](docs/26-gestao-cadastros-mestres.md) para hierarquia portuária, integridade, concorrência e regras de inativação.
+Consulte [Demonstração pública — Parte 23](docs/27-demonstracao-publica.md) para o acesso sem senha, suas garantias e configuração.
+Consulte [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md) para imagens, variáveis, TLS e operação do ambiente.
+Consulte [Finalização e release — Parte 25](docs/29-finalizacao-e-release.md) para o quality gate e a versão `1.0.0`.
 
 ## Objetivos
 
@@ -353,13 +387,18 @@ Consulte [Gestão administrativa de usuários — Parte 21](docs/25-gestao-admin
 - [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md)
 - [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md)
 - [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md)
+- [Gestão de cadastros mestres — Parte 22](docs/26-gestao-cadastros-mestres.md)
+- [Demonstração pública — Parte 23](docs/27-demonstracao-publica.md)
+- [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md)
+- [Finalização e release — Parte 25](docs/29-finalizacao-e-release.md)
+- [Histórico de versões](CHANGELOG.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
 
 ## Referências de domínio
 
-Os conceitos foram alinhados, quando aplicável, ao padrão de Port Call da DCSA, ao esquema de identificação de navios da IMO e à terminologia observada no Porto Sem Papel. O sistema será uma aplicação demonstrativa e não substituirá sistemas oficiais nem realizará anuências governamentais.
+Os conceitos foram alinhados, quando aplicável, ao padrão de Port Call da DCSA, ao esquema de identificação de navios da IMO e à terminologia observada no Porto Sem Papel. O sistema é uma aplicação demonstrativa e não substitui sistemas oficiais nem realiza anuências governamentais.
 
 ## Política de demonstração
 
-Todos os registros disponibilizados publicamente serão fictícios. O repositório não deverá conter credenciais, documentos operacionais reais, dados pessoais, chaves de API ou informações pertencentes a empresas e autoridades portuárias.
+Todos os registros disponibilizados publicamente são fictícios. O repositório não contém credenciais, documentos operacionais reais, dados pessoais, chaves de API ou informações pertencentes a empresas e autoridades portuárias.

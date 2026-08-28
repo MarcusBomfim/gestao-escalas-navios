@@ -36,7 +36,7 @@ public sealed class Berth : AuditableEntity
         UsefulLengthMeters = DomainRules.Positive(usefulLengthMeters, "Comprimento útil");
         MaximumBeamMeters = DomainRules.Positive(maximumBeamMeters, "Boca máxima");
         MaximumDraftMeters = DomainRules.Positive(maximumDraftMeters, "Calado máximo");
-        SupportedVesselTypes = supportedVesselTypes.Distinct().ToArray();
+        SupportedVesselTypes = NormalizeSupportedVesselTypes(supportedVesselTypes);
         Status = BerthStatus.Available;
     }
 
@@ -58,6 +58,26 @@ public sealed class Berth : AuditableEntity
 
     public BerthStatus Status { get; private set; }
 
+    public void Update(
+        string code,
+        string name,
+        decimal usefulLengthMeters,
+        decimal maximumBeamMeters,
+        decimal maximumDraftMeters,
+        IEnumerable<VesselType> supportedVesselTypes,
+        BerthStatus status,
+        DateTimeOffset changedAtUtc)
+    {
+        Code = DomainRules.RequiredText(code, "Código do berço", 30).ToUpperInvariant();
+        Name = DomainRules.RequiredText(name, "Nome do berço", 120);
+        UsefulLengthMeters = DomainRules.Positive(usefulLengthMeters, "Comprimento útil");
+        MaximumBeamMeters = DomainRules.Positive(maximumBeamMeters, "Boca máxima");
+        MaximumDraftMeters = DomainRules.Positive(maximumDraftMeters, "Calado máximo");
+        SupportedVesselTypes = NormalizeSupportedVesselTypes(supportedVesselTypes);
+        Status = ValidateStatus(status);
+        MarkUpdated(changedAtUtc);
+    }
+
     public bool CanReceive(Vessel vessel)
     {
         ArgumentNullException.ThrowIfNull(vessel);
@@ -67,5 +87,32 @@ public sealed class Berth : AuditableEntity
             && vessel.BeamMeters <= MaximumBeamMeters
             && vessel.MaximumDraftMeters <= MaximumDraftMeters
             && (SupportedVesselTypes.Length == 0 || SupportedVesselTypes.Contains(vessel.Type));
+    }
+
+    private static VesselType[] NormalizeSupportedVesselTypes(
+        IEnumerable<VesselType> supportedVesselTypes)
+    {
+        if (supportedVesselTypes is null)
+        {
+            throw new DomainException("Os tipos de navio suportados devem ser informados.");
+        }
+
+        var types = supportedVesselTypes.Distinct().ToArray();
+        if (types.Any(type => !Enum.IsDefined(type)))
+        {
+            throw new DomainException("Um dos tipos de navio suportados não é válido.");
+        }
+
+        return types;
+    }
+
+    private static BerthStatus ValidateStatus(BerthStatus status)
+    {
+        if (!Enum.IsDefined(status))
+        {
+            throw new DomainException("A situação do berço não é válida.");
+        }
+
+        return status;
     }
 }
