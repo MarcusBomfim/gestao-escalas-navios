@@ -36,10 +36,10 @@ namespace PortManagement.Infrastructure.Persistence.Migrations
             migrationBuilder.Sql(
                 """
                 UPDATE port_management.berth_window_revisions AS revision
-                SET previous_berth_id = window.berth_id,
-                    new_berth_id = window.berth_id
-                FROM port_management.berth_windows AS window
-                WHERE revision.berth_window_id = window.id;
+                SET previous_berth_id = berth_window.berth_id,
+                    new_berth_id = berth_window.berth_id
+                FROM port_management.berth_windows AS berth_window
+                WHERE revision.berth_window_id = berth_window.id;
                 """);
 
             migrationBuilder.AlterColumn<Guid>(

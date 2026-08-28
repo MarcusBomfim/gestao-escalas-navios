@@ -71,9 +71,12 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      DataProtection__KeysPath: /app/data-protection-keys
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - data_protection_keys:/app/data-protection-keys
     restart: "no"
 
   seed-demo:
@@ -86,9 +89,12 @@ services:
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
       Demo__UserPassword: ${DEMO_USER_PASSWORD}
+      DataProtection__KeysPath: /app/data-protection-keys
     depends_on:
       migrations:
         condition: service_completed_successfully
+    volumes:
+      - data_protection_keys:/app/data-protection-keys
     restart: "no"
 
   web:

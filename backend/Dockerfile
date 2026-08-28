@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /workspace
 
 COPY global.json ./
@@ -16,15 +16,18 @@ RUN dotnet publish backend/src/PortManagement.Api/PortManagement.Api.csproj \
     --output /app/publish \
     --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 LABEL org.opencontainers.image.title="Port Management API" \
       org.opencontainers.image.description="API do Sistema de Gestão de Escalas de Navios" \
       org.opencontainers.image.source="https://github.com/MarcusBomfim/gestao-escalas-navios"
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-COPY --from=build --chown=appuser:appgroup /app/publish .
-RUN mkdir -p /app/data-protection-keys && chown appuser:appgroup /app/data-protection-keys
-USER appuser
+COPY --from=build /app/publish .
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libgssapi-krb5-2 wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /app/data-protection-keys \
+    && chown "$APP_UID:$APP_UID" /app/data-protection-keys
+USER $APP_UID
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "PortManagement.Api.dll"]
