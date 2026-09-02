@@ -171,7 +171,7 @@ docker compose --env-file .env.production -f compose.production.yaml config --qu
 docker compose --env-file .env.production -f compose.production.yaml up -d
 ```
 
-Configure a variável `PUBLIC_API_URL` do repositório antes de criar uma tag, pois a URL é incorporada ao frontend durante o build. Consulte [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md) para TLS, domínios, atualização e retorno de versão.
+Configure a variável `PUBLIC_API_URL` do repositório antes de criar uma tag, pois a URL é incorporada ao frontend durante o build. Consulte [Entrega e publicação](docs/entrega-e-publicacao.md) para TLS, domínios, atualização e retorno de versão.
 
 ## Validação
 
@@ -213,7 +213,7 @@ Use `-Profile load` somente em ambiente próprio e controlado. O resultado JSON 
 
 Os workflows em `.github/workflows` executam build, testes, lint, auditoria de dependências, CodeQL, construção das imagens e smoke de desempenho em cada alteração da `main`. A carga controlada roda sob demanda e semanalmente. O Dependabot acompanha atualizações de NuGet, npm, Docker e GitHub Actions.
 
-Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. A versão final planejada é `1.0.0`; consulte o [changelog](CHANGELOG.md) e o [checklist de release](docs/29-finalizacao-e-release.md).
+Releases são deliberadas: somente uma tag `vX.Y.Z` publica as imagens `port-management-api` e `port-management-web` no GHCR. A versão final planejada é `1.0.0`; consulte o [changelog](CHANGELOG.md) e o [changelog](CHANGELOG.md).
 
 ## Interface Web
 
@@ -329,28 +329,9 @@ Invoke-RestMethod `
   -Headers $headers
 ```
 
-Consulte [API — Parte 4](docs/08-api-parte-4.md) para filtros, exemplos de requisição, idempotência e tratamento de erros.
-Consulte [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md) para o fluxo de sessão, matriz de permissões e decisões de segurança.
-Consulte [Interface — Parte 6](docs/10-interface-autenticada.md) para as rotas, estados de interface e estratégia de integração com a API.
-Consulte [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md) para formulários, permissões, idempotência e transições de escala.
-Consulte [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md) para compatibilidade, agenda, concorrência e proteção contra sobreposição.
-Consulte [Execução operacional — Parte 9](docs/13-execucao-operacional.md) para marcos realizados, cargas, indicadores e integridade do fluxo.
-Consulte [Torre de controle — Parte 10](docs/14-torre-de-controle.md) para indicadores, critérios de alerta e priorização operacional.
-Consulte [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md) para SignalR, reconexão e estado de leitura.
-Consulte [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md) para captura transacional, minimização de dados e exportações CSV.
-Consulte [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md) para correlação, logs, métricas e health checks.
-Consulte [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md) para pipelines, atualização de dependências, proteção da branch e releases no GHCR.
-Consulte [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md) para cenários, execução local, evidências de falha e integração com Docker.
-Consulte [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md) para perfis k6, limites de latência, timeouts, retry e desligamento gracioso.
-Consulte [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md) para versionamento, autenticação documentada, ambiente de exposição e testes de contrato.
-Consulte [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md) para o modelo de posições, atualização em tempo real, acessibilidade e limites da demonstração.
-Consulte [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md) para claims, filtros, criação de escalas, SignalR e negação por padrão.
-Consulte [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md) para tokens temporários, envio SMTP, proteção contra enumeração e revogação de sessões.
-Consulte [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md) para perfis, organizações, bloqueio imediato, concorrência e proteção do último administrador.
-Consulte [Gestão de cadastros mestres — Parte 22](docs/26-gestao-cadastros-mestres.md) para hierarquia portuária, integridade, concorrência e regras de inativação.
-Consulte [Demonstração pública — Parte 23](docs/27-demonstracao-publica.md) para o acesso sem senha, suas garantias e configuração.
-Consulte [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md) para imagens, variáveis, TLS e operação do ambiente.
-Consulte [Finalização e release — Parte 25](docs/29-finalizacao-e-release.md) para o quality gate e a versão `1.0.0`.
+Para filtros, idempotência e tratamento de erros, o contrato em `/openapi/v1.json` é a referência autoritativa.
+Para o fluxo de sessão e a matriz de permissões, consulte [Segurança](docs/seguranca.md).
+Para os fluxos operacionais completos, consulte [Operação portuária](docs/operacao-portuaria.md).
 
 ## Objetivos
 
@@ -362,35 +343,32 @@ Consulte [Finalização e release — Parte 25](docs/29-finalizacao-e-release.md
 
 ## Documentação
 
-- [Visão e escopo](docs/01-visao-e-escopo.md)
-- [Usuários e permissões](docs/02-usuarios-e-permissoes.md)
-- [Domínio e regras de negócio](docs/03-dominio-e-regras.md)
-- [Requisitos](docs/04-requisitos.md)
-- [Glossário portuário](docs/05-glossario-portuario.md)
-- [Cenários de aceitação](docs/06-cenarios-de-aceitacao.md)
-- [Modelo de dados](docs/07-modelo-de-dados.md)
-- [API — Parte 4](docs/08-api-parte-4.md)
-- [Segurança — Parte 5](docs/09-autenticacao-e-autorizacao.md)
-- [Interface — Parte 6](docs/10-interface-autenticada.md)
-- [Fluxos operacionais — Parte 7](docs/11-fluxos-operacionais.md)
-- [Planejamento de atracação — Parte 8](docs/12-planejamento-atracacao.md)
-- [Execução operacional — Parte 9](docs/13-execucao-operacional.md)
-- [Torre de controle — Parte 10](docs/14-torre-de-controle.md)
-- [Notificações em tempo real — Parte 11](docs/15-notificacoes-em-tempo-real.md)
-- [Auditoria e relatórios — Parte 12](docs/16-auditoria-e-relatorios.md)
-- [Observabilidade e saúde — Parte 13](docs/17-observabilidade-e-saude.md)
-- [CI/CD e segurança — Parte 14](docs/18-ci-cd-e-seguranca.md)
-- [Testes end-to-end — Parte 15](docs/19-testes-end-to-end.md)
-- [Desempenho e resiliência — Parte 16](docs/20-desempenho-e-resiliencia.md)
-- [Contrato OpenAPI — Parte 17](docs/21-contrato-openapi.md)
-- [Mapa operacional simulado — Parte 18](docs/22-mapa-operacional-simulado.md)
-- [Isolamento organizacional — Parte 19](docs/23-isolamento-organizacional.md)
-- [Recuperação segura de senha — Parte 20](docs/24-recuperacao-segura-de-senha.md)
-- [Gestão administrativa de usuários — Parte 21](docs/25-gestao-administrativa-usuarios.md)
-- [Gestão de cadastros mestres — Parte 22](docs/26-gestao-cadastros-mestres.md)
-- [Demonstração pública — Parte 23](docs/27-demonstracao-publica.md)
-- [Publicação em produção — Parte 24](docs/28-publicacao-em-producao.md)
-- [Finalização e release — Parte 25](docs/29-finalizacao-e-release.md)
+Organizada por assunto, não pela ordem em que foi construída.
+
+**O problema e as regras**
+
+- [Visão e escopo](docs/visao-e-escopo.md)
+- [Domínio e regras de negócio](docs/dominio-e-regras.md)
+- [Glossário portuário](docs/glossario-portuario.md)
+- [Requisitos](docs/requisitos.md)
+- [Cenários de aceitação](docs/cenarios-de-aceitacao.md)
+- [Modelo de dados](docs/modelo-de-dados.md)
+
+**Como o sistema funciona**
+
+- [Operação portuária](docs/operacao-portuaria.md) — fluxos, planejamento de berço, execução, torre de controle, cadastros e auditoria
+- [Segurança](docs/seguranca.md) — papéis, sessão, isolamento entre organizações e administração de contas
+- [Observabilidade e resiliência](docs/observabilidade-e-resiliencia.md) — correlação, métricas, health checks e comportamento sob carga
+- [Entrega e publicação](docs/entrega-e-publicacao.md) — pipelines, automação de segurança e preparação do ambiente
+
+**Decisões**
+
+- [ADR-001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)
+
+**Referência gerada**
+
+O contrato da API não é mantido à mão: `/openapi/v1.json` é gerado a partir do código e a referência interativa fica em `/docs/`.
+
 - [Histórico de versões](CHANGELOG.md)
 - [Política de segurança](SECURITY.md)
 - [ADR 001 — monólito modular](docs/decisions/ADR-001-monolito-modular.md)

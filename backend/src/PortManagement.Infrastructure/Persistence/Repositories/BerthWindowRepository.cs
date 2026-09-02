@@ -46,6 +46,13 @@ internal sealed class BerthWindowRepository(
                     || window.Status == BerthWindowStatus.Confirmed),
             cancellationToken);
 
+    /// <summary>
+    /// Esta consulta é intencionalmente global: não aplica
+    /// <c>ApplyOrganizationScope</c>. Um berço ocupado está ocupado
+    /// independentemente de quem reservou, e escopar aqui permitiria que duas
+    /// organizações confirmassem o mesmo período no mesmo berço. O participante
+    /// continua sem enxergar a janela conflitante — recebe apenas a recusa.
+    /// </summary>
     public Task<bool> ConfirmedOverlapExistsAsync(
         Guid berthId,
         DateTimeOffset startsAtUtc,

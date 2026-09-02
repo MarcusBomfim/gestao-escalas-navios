@@ -15,6 +15,11 @@ As mudanças relevantes deste projeto seguem o formato do [Keep a Changelog](htt
 - interface servida por nginx sem privilégios, com sistema de arquivos somente leitura e `cap_drop: ALL`;
 - imagens varridas com Trivy antes da publicação, interrompendo o release em vulnerabilidade alta ou crítica.
 
+### Alterado
+
+- documentação reorganizada por assunto: 30 arquivos numerados por etapa de desenvolvimento passam a 11 organizados por tema, sem perda de conteúdo. `Parte N` deixa de aparecer em títulos e referências;
+- o contrato da API deixa de ser descrito à mão: `/openapi/v1.json` é a referência.
+
 ### Adicionado
 
 - 23 testes de regressão para os controles acima, incluindo recusa de `X-Forwarded-For` forjado e verificação de que todo `location` do nginx carrega os cabeçalhos.
