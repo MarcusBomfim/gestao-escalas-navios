@@ -17,6 +17,26 @@ internal static class SecurityConfiguration
     public const string AuthenticationRateLimit = "authentication";
     public const string WebClientCorsPolicy = "web-client";
 
+    /// <summary>
+    /// Chave de partição do limite de tentativas nas rotas que recebem senha.
+    /// Depende do endereço já resolvido pelo <c>UseForwardedHeaders</c>: sem
+    /// esse passo, todas as requisições vindas do proxy caem na mesma partição
+    /// e uma única origem esgota a cota de todo mundo.
+    /// </summary>
+    public static string BuildAuthenticationPartitionKey(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var address = context.Connection.RemoteIpAddress;
+        var client = address is null
+            ? "unknown"
+            : address.IsIPv4MappedToIPv6
+                ? address.MapToIPv4().ToString()
+                : address.ToString();
+
+        return $"{client}:{context.Request.Path.Value?.ToLowerInvariant() ?? "/"}";
+    }
+
     public static IServiceCollection AddApiSecurity(
         this IServiceCollection services,
         JwtOptions jwtOptions,
@@ -120,8 +140,7 @@ internal static class SecurityConfiguration
             options.AddPolicy(
                 AuthenticationRateLimit,
                 context => RateLimitPartition.GetFixedWindowLimiter(
-                    $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:" +
-                    $"{context.Request.Path.Value?.ToLowerInvariant() ?? "/"}",
+                    BuildAuthenticationPartitionKey(context),
                     _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = 10,

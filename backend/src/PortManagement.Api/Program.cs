@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -130,6 +131,28 @@ var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
 if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
 {
     dataProtection.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+
+    /*
+     * As chaves de Data Protection assinam, entre outras coisas, os tokens de
+     * redefinicao de senha. Em disco e sem cifra, quem ler o volume consegue
+     * forja-los. Quando um certificado e informado, as chaves passam a ser
+     * cifradas com ele; sem certificado a API recusa subir em producao.
+     */
+    var certificatePath = builder.Configuration["DataProtection:CertificatePath"];
+    if (!string.IsNullOrWhiteSpace(certificatePath))
+    {
+        dataProtection.ProtectKeysWithCertificate(
+            X509CertificateLoader.LoadPkcs12FromFile(
+                certificatePath,
+                builder.Configuration["DataProtection:CertificatePassword"]));
+    }
+    else if (!builder.Environment.IsDevelopment()
+        && builder.Configuration.GetValue("DataProtection:AllowUnprotectedKeys", false) is false)
+    {
+        throw new InvalidOperationException(
+            "Defina DataProtection:CertificatePath para cifrar as chaves em repouso, "
+            + "ou DataProtection:AllowUnprotectedKeys=true para assumir o risco de forma explicita.");
+    }
 }
 builder.Services.AddRequestTimeouts(options =>
 {
@@ -143,7 +166,12 @@ builder.Services.Configure<HostOptions>(options =>
     options.ShutdownTimeout = TimeSpan.FromSeconds(apiResilienceOptions.ShutdownTimeoutSeconds));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditRequestContext, HttpAuditRequestContext>();
-builder.Services.AddScoped<IUserDataScope, HttpUserDataScope>();
+builder.Services.AddScoped<DataScopeContext>();
+builder.Services.AddScoped<IUserDataScope>(provider =>
+    provider.GetRequiredService<DataScopeContext>().IsSystem
+        ? SystemDataScope.Instance
+        : ActivatorUtilities.CreateInstance<HttpUserDataScope>(provider));
+builder.Services.AddProxyForwarding(builder.Configuration);
 builder.Services.AddApiSecurity(jwtOptions, allowedOrigins);
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ControlTowerBroadcastService>();
@@ -171,11 +199,13 @@ if (args.Contains("--seed-demo", StringComparer.Ordinal))
     return;
 }
 
+// Precisa vir antes de tudo que lê IP ou esquema: correlação, rate limit e auditoria.
+app.UseForwardedHeaders();
 app.UseMiddleware<CorrelationAndMetricsMiddleware>();
 app.UseExceptionHandler();
 app.UseRequestTimeouts();
 if (!app.Environment.IsDevelopment()
-    && builder.Configuration.GetValue("Security:EnforceHttps", false))
+    && builder.Configuration.GetValue("Security:EnforceHttps", true))
 {
     app.UseHsts();
     app.UseHttpsRedirection();

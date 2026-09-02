@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
+using PortManagement.Api.Security;
 using PortManagement.Application.ControlTower;
 
 namespace PortManagement.Api.Realtime;
@@ -26,6 +27,11 @@ internal sealed class ControlTowerBroadcastService(
             try
             {
                 await using var scope = scopeFactory.CreateAsyncScope();
+
+                // Leitura interna e legítima de todas as organizações: o sinal de
+                // invalidação vale para qualquer cliente conectado. A elevação é
+                // pedida aqui, antes de resolver o handler, e não herdada por omissão.
+                scope.ServiceProvider.GetRequiredService<DataScopeContext>().ElevateToSystem();
                 var handler = scope.ServiceProvider.GetRequiredService<GetControlTowerHandler>();
                 var response = (await handler.HandleAsync(stoppingToken)).Value!;
                 var fingerprint = CreateFingerprint(response);

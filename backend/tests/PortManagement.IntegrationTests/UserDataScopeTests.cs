@@ -53,13 +53,31 @@ public sealed class UserDataScopeTests
         Assert.Null(scope.OrganizationId);
     }
 
+    /// <summary>
+    /// Ausência de requisição não concede acesso: o escopo derivado do HTTP é o
+    /// padrão e ele falha fechado. Trabalhos em segundo plano que precisem ler
+    /// todas as organizações pedem isso por <see cref="DataScopeContext"/>.
+    /// </summary>
     [Fact]
-    public void BackgroundExecutionWithoutHttpContextUsesSystemScope()
+    public void ExecutionWithoutHttpContextHasNoAccess()
     {
         var scope = new HttpUserDataScope(new HttpContextAccessor());
 
-        Assert.True(scope.HasGlobalAccess);
+        Assert.False(scope.HasGlobalAccess);
         Assert.Null(scope.OrganizationId);
+    }
+
+    [Fact]
+    public void SystemScopeIsGrantedOnlyByExplicitElevation()
+    {
+        var context = new DataScopeContext();
+        Assert.False(context.IsSystem);
+
+        context.ElevateToSystem();
+
+        Assert.True(context.IsSystem);
+        Assert.True(SystemDataScope.Instance.HasGlobalAccess);
+        Assert.Null(SystemDataScope.Instance.OrganizationId);
     }
 
     private static HttpUserDataScope CreateScope(params Claim[] claims)

@@ -35,7 +35,14 @@ services:
       PasswordRecovery__PublicWebUrl: ${PUBLIC_WEB_URL}
       Demo__PublicViewerEnabled: ${PUBLIC_DEMO_ENABLED:-true}
       DataProtection__KeysPath: /app/data-protection-keys
-      Security__EnforceHttps: "false"
+      DataProtection__AllowUnprotectedKeys: ${DATA_PROTECTION_ALLOW_UNPROTECTED:-false}
+      DataProtection__CertificatePath: ${DATA_PROTECTION_CERTIFICATE_PATH:-}
+      DataProtection__CertificatePassword: ${DATA_PROTECTION_CERTIFICATE_PASSWORD:-}
+      # Com X-Forwarded-Proto reconhecido, o redirecionamento não entra em laço
+      # atrás do proxy TLS e o HSTS passa a ser emitido.
+      Security__EnforceHttps: ${ENFORCE_HTTPS:-true}
+      # Rede de onde o X-Forwarded-For é aceito. Restrinja ao IP do seu proxy.
+      Security__TrustedProxies__0: ${TRUSTED_PROXY_NETWORK:-172.16.0.0/12}
       AllowedHosts: ${API_ALLOWED_HOSTS}
     depends_on:
       postgres:
@@ -89,11 +96,22 @@ services:
 
   web:
     image: ghcr.io/marcusbomfim/port-management-web:${IMAGE_TAG:-latest}
+    environment:
+      # Entram na diretiva connect-src da Content-Security-Policy.
+      API_ORIGIN: ${PUBLIC_API_URL:-}
+      API_WEBSOCKET_ORIGIN: ${PUBLIC_API_WEBSOCKET_URL:-}
     ports:
-      - "127.0.0.1:${WEB_HOST_PORT:-5173}:80"
+      - "127.0.0.1:${WEB_HOST_PORT:-5173}:8080"
     depends_on:
       api:
         condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    cap_drop:
+      - ALL
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

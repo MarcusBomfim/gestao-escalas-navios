@@ -59,7 +59,63 @@ jobs:
       - name: Preparar Buildx
         run: docker buildx create --name port-management-builder --driver docker-container --use
 
-      - name: Construir e publicar API
+      # As imagens são construídas localmente e varridas antes de irem para o
+      # registro: uma vulnerabilidade alta ou crítica interrompe a publicação em
+      # vez de ser descoberta depois que a tag já está no ar. O segundo build
+      # aproveita o cache do primeiro.
+      - name: Construir API para varredura
+        env:
+          API_IMAGE: ${{ steps.metadata.outputs.api_image }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          docker buildx build \
+            --file backend/Dockerfile \
+            --platform linux/amd64 \
+            --tag "$API_IMAGE:$VERSION" \
+            --load \
+            .
+
+      - name: Construir interface para varredura
+        env:
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+          WEB_IMAGE: ${{ steps.metadata.outputs.web_image }}
+        shell: bash
+        run: |
+          api_url="${PUBLIC_API_URL:-http://localhost:8080}"
+          docker buildx build \
+            --file frontend/Dockerfile \
+            --platform linux/amd64 \
+            --build-arg "VITE_API_URL=$api_url" \
+            --tag "$WEB_IMAGE:$VERSION" \
+            --load \
+            .
+
+      - name: Varrer imagens
+        env:
+          API_IMAGE: ${{ steps.metadata.outputs.api_image }}
+          WEB_IMAGE: ${{ steps.metadata.outputs.web_image }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+          # Fixado por versão. Trocar por digesto é mais estrito ainda.
+          TRIVY_IMAGE: aquasec/trivy:0.67.2
+        shell: bash
+        run: |
+          for image in "$API_IMAGE" "$WEB_IMAGE"; do
+            echo "::group::Varredura de ${image}:${VERSION}"
+            docker run --rm \
+              --volume /var/run/docker.sock:/var/run/docker.sock \
+              --volume "${HOME}/.cache/trivy:/root/.cache/trivy" \
+              "$TRIVY_IMAGE" image \
+              --scanners vuln \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --exit-code 1 \
+              --format table \
+              "${image}:${VERSION}"
+            echo "::endgroup::"
+          done
+
+      - name: Publicar API
         env:
           API_IMAGE: ${{ steps.metadata.outputs.api_image }}
           VERSION: ${{ steps.metadata.outputs.version }}
@@ -74,7 +130,7 @@ jobs:
             --push \
             .
 
-      - name: Construir e publicar interface
+      - name: Publicar interface
         env:
           PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
           VERSION: ${{ steps.metadata.outputs.version }}

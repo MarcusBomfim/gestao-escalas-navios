@@ -21,6 +21,23 @@ internal sealed class IdentityService(
 {
     private const string PublicDemoEmail = "viewer.demo@portmanagement.local";
 
+    /*
+     * Conta descartável usada só para gastar o mesmo tempo de uma verificação
+     * real quando o e-mail não existe. Sem isso, a resposta para um endereço
+     * desconhecido volta em poucos milissegundos e a de um endereço cadastrado
+     * volta depois do PBKDF2 — diferença suficiente para varrer uma lista e
+     * descobrir quem tem conta.
+     */
+    private static readonly ApplicationUser TimingDecoyUser = new()
+    {
+        Id = Guid.Empty,
+        DisplayName = "timing-decoy",
+        UserName = "timing-decoy",
+        PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(
+            null!,
+            Convert.ToHexString(RandomNumberGenerator.GetBytes(32)))
+    };
+
     private static readonly ApplicationError InvalidCredentials = new(
         "security.invalid_credentials",
         "E-mail ou senha inválidos.",
@@ -81,6 +98,7 @@ internal sealed class IdentityService(
         var user = await userManager.FindByEmailAsync(email);
         if (user is null || !user.IsActive)
         {
+            await BurnPasswordVerificationTimeAsync(command.Password);
             return Result.Failure<AuthTokenResponse>(InvalidCredentials);
         }
 
@@ -210,6 +228,8 @@ internal sealed class IdentityService(
         var user = await userManager.FindByEmailAsync(command.Email.Trim());
         if (user is null || !user.IsActive || !await userManager.IsEmailConfirmedAsync(user))
         {
+            // A resposta é sempre a mesma; o tempo também precisa ser.
+            await BurnPasswordVerificationTimeAsync(Guid.NewGuid().ToString());
             return Result.Success(true);
         }
 
@@ -385,6 +405,14 @@ internal sealed class IdentityService(
                     .SetProperty(token => token.RevokedAtUtc, now)
                     .SetProperty(token => token.RevokedByIp, clientIp),
                 cancellationToken);
+
+    /// <summary>
+    /// Executa uma verificação de senha contra a conta descartável, apenas para
+    /// que o caminho do usuário inexistente custe o mesmo que o do existente.
+    /// O resultado é intencionalmente ignorado.
+    /// </summary>
+    private Task<bool> BurnPasswordVerificationTimeAsync(string password) =>
+        userManager.CheckPasswordAsync(TimingDecoyUser, password);
 
     private static (string Raw, string Hash) GenerateRefreshToken()
     {

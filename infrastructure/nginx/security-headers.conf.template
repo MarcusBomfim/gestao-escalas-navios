@@ -1,0 +1,18 @@
+# Cabeçalhos de segurança da interface.
+#
+# Precisa ser incluído dentro de CADA bloco `location`: no nginx, um `location`
+# que declara o próprio `add_header` deixa de herdar os do bloco externo. Sem
+# esse include, os arquivos de /assets/ seriam servidos sem `nosniff`.
+
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header X-Frame-Options "DENY" always;
+add_header Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()" always;
+add_header Cross-Origin-Opener-Policy "same-origin" always;
+add_header Cross-Origin-Resource-Policy "same-origin" always;
+
+# A SPA não usa script inline. O `style-src 'unsafe-inline'` fica porque o
+# React injeta estilos em elementos durante a renderização; se isso mudar,
+# remova. O `connect-src` precisa de wss: por causa do SignalR, e o endereço
+# da API entra em tempo de build via API_ORIGIN.
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ${API_ORIGIN} ${API_WEBSOCKET_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" always;

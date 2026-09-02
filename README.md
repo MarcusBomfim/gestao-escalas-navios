@@ -181,7 +181,7 @@ dotnet build .\backend\PortManagement.slnx --no-restore
 dotnet test .\backend\PortManagement.slnx --no-build
 ```
 
-A suíte de backend possui 114 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, acesso público somente leitura, recuperação de senha, gestão de usuários, cadastros mestres, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
+A suíte de backend possui 137 testes e cobre regras do número IMO, atualização de navios, transições de escala, compatibilidade e agenda de berços, histórico de reprogramação, sequência de marcos realizados, progresso de carga, avaliação de alertas, notificações e leituras por usuário, auditoria, proteção de CSV, correlação segura, métricas HTTP, indicadores consolidados, simulação determinística de posições, escopo organizacional que falha fechado, elevação explícita para processos internos, aceitação de cabeçalhos de proxy apenas de origens confiáveis, partição do limite de tentativas por cliente real, cabeçalhos de segurança da interface, negação por padrão, concorrência otimista, casos de uso, idempotência, paginação, identidade, acesso público somente leitura, recuperação de senha, gestão de usuários, cadastros mestres, refresh tokens, resiliência, contrato OpenAPI, modelo de persistência e dependências arquiteturais.
 
 Para validar a interface:
 
@@ -192,7 +192,7 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-Com a aplicação completa em execução, os seis testes Playwright validam os fluxos de navegador, incluindo acesso público somente leitura, recuperação sem enumeração de contas, gestão administrativa de usuários e cadastros mestres, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 120 testes automatizados:
+Com a aplicação completa em execução, os seis testes Playwright validam os fluxos de navegador, incluindo acesso público somente leitura, recuperação sem enumeração de contas, gestão administrativa de usuários e cadastros mestres, sessão, permissões e a identificação do mapa demonstrativo, e elevam o total para 143 testes automatizados:
 
 ```powershell
 npx.cmd playwright install chromium
