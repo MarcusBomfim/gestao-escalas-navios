@@ -513,6 +513,18 @@ public sealed class DemoDataSeeder(
                 var creationResult = await userManager.CreateAsync(user, password);
                 EnsureSucceeded(creationResult, $"criar o usuário {demoUser.Email}");
             }
+            else if (!await userManager.CheckPasswordAsync(user, password))
+            {
+                /*
+                 * A conta já existe com outra senha. Sem este bloco, trocar
+                 * Demo:UserPassword não teria efeito algum e o ambiente ficaria
+                 * inacessível com a senha configurada — o seed precisa ser a
+                 * autoridade sobre as credenciais demonstrativas.
+                 */
+                var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+                var resetResult = await userManager.ResetPasswordAsync(user, resetToken, password);
+                EnsureSucceeded(resetResult, $"redefinir a senha de {demoUser.Email}");
+            }
 
             if (user.OrganizationId != demoUser.OrganizationId)
             {
