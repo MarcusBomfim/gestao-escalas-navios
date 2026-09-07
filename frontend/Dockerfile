@@ -11,7 +11,7 @@ RUN npm run build
 
 # Imagem sem privilégios: o processo mestre do nginx roda como usuário comum e
 # escuta em 8080, porque portas abaixo de 1024 exigem root.
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 LABEL org.opencontainers.image.title="Port Management Web" \
       org.opencontainers.image.description="Interface do Sistema de Gestão de Escalas de Navios" \
       org.opencontainers.image.source="https://github.com/MarcusBomfim/gestao-escalas-navios"
